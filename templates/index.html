@@ -1,0 +1,61 @@
+<!-- Index page template -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">Skaner Formacji Świecowych</h1>
+        <p class="lead">Aplikacja do automatycznego wykrywania i analizy formacji świecowych na rynkach finansowych</p>
+        
+        <div class="card mt-5">
+            <div class="card-body">
+                <h3 class="card-title">Funkcjonalności</h3>
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <h5>📁 Import danych</h5>
+                            <p>Wczytaj dane z pliku CSV lub pobierz bezpośrednio z Yahoo Finance</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <h5>🔍 Wykrywanie formacji</h5>
+                            <p>Automatyczna identyfikacja ponad 20 formacji świecowych</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <h5>📊 Wizualizacja</h5>
+                            <p>Interaktywne wykresy z oznaczonymi formacjami</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <h5>💡 Interpretacja</h5>
+                            <p>Analiza formacji jako wzrostowe/spadkowe</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <h5>✅ Weryfikacja</h5>
+                            <p>Ocena skuteczności wykrytych formacji</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box">
+                            <h5>💾 Eksport</h5>
+                            <p>Zapisz wyniki analizy do pliku</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5">
+            <a href="/upload" class="btn btn-primary btn-lg">Rozpocznij analizę</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

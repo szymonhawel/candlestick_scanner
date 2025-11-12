@@ -1,1 +1,40 @@
 /* Stylesheet */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1;
+}
+
+.feature-box {
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    height: 100%;
+    transition: transform 0.3s;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.table {
+    font-size: 0.9rem;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+.badge {
+    font-size: 0.85rem;
+}

@@ -1,0 +1,110 @@
+<!-- Results page template -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Wyniki analizy</h2>
+            <a href="/export" class="btn btn-success">💾 Eksportuj wyniki</a>
+        </div>
+        
+        <div class="alert alert-info">
+            Wykryto <strong>{{ pattern_count }}</strong> formacji świecowych
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>📊 Wykres świecowy</h5>
+            </div>
+            <div class="card-body">
+                <img src="{{ chart }}" class="img-fluid" alt="Wykres świecowy">
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>🔍 Wykryte formacje</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Formacja</th>
+                                <th>Trend</th>
+                                <th>Typ</th>
+                                <th>Sygnał</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in interpretations %}
+                            <tr>
+                                <td>{{ item.date }}</td>
+                                <td>{{ item.pattern }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if item.trend == 'Wzrostowa' else 'danger' }}">
+                                        {{ item.trend }}
+                                    </span>
+                                </td>
+                                <td>{{ item.type }}</td>
+                                <td>{{ item.signal }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>✅ Weryfikacja skuteczności</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Formacja</th>
+                                <th>Oczekiwany kierunek</th>
+                                <th>Zmiana ceny (%)</th>
+                                <th>Skuteczna</th>
+                                <th>W strefie kluczowej</th>
+                                <th>Wiarygodność</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in effectiveness %}
+                            <tr>
+                                <td>{{ item.date }}</td>
+                                <td>{{ item.pattern }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if item.expected == 'up' else 'danger' }}">
+                                        {{ '↑' if item.expected == 'up' else '↓' }}
+                                    </span>
+                                </td>
+                                <td>{{ item.actual_change }}%</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if item.effective else 'warning' }}">
+                                        {{ '✓' if item.effective else '✗' }}
+                                    </span>
+                                </td>
+                                <td>{{ '✓' if item.near_key_level else '✗' }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if item.reliability == 'Wysoka' else ('warning' if item.reliability == 'Średnia' else 'danger') }}">
+                                        {{ item.reliability }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

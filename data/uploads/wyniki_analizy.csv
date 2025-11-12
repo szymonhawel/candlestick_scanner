@@ -1,0 +1,211 @@
+index,date,pattern,trend,type,signal
+8,2024-11-22 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+9,2024-11-25 00:00:00,Three Outside Up/Down,Wzrostowa,Kontynuacja wzrostowa,100
+11,2024-11-27 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+11,2024-11-27 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+15,2024-12-04 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+15,2024-12-04 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+17,2024-12-06 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+17,2024-12-06 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+18,2024-12-09 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+19,2024-12-10 00:00:00,Three Outside Up/Down,Wzrostowa,Kontynuacja wzrostowa,100
+20,2024-12-11 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+22,2024-12-13 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+22,2024-12-13 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+23,2024-12-16 00:00:00,Marubozu,Wzrostowa,Kontynuacja wzrostowa,100
+28,2024-12-23 00:00:00,Hanging Man,Spadkowa,Odwrócenie spadkowe,-100
+29,2024-12-24 00:00:00,Marubozu,Wzrostowa,Kontynuacja wzrostowa,100
+32,2024-12-30 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+32,2024-12-30 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+35,2025-01-03 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+35,2025-01-03 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+36,2025-01-06 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+37,2025-01-07 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+38,2025-01-08 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+40,2025-01-13 00:00:00,Hammer,Wzrostowa,Odwrócenie wzrostowe,100
+41,2025-01-14 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+44,2025-01-17 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+45,2025-01-21 00:00:00,Hammer,Wzrostowa,Odwrócenie wzrostowe,100
+46,2025-01-22 00:00:00,Marubozu,Wzrostowa,Kontynuacja wzrostowa,100
+47,2025-01-23 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+51,2025-01-29 00:00:00,Marubozu,Wzrostowa,Kontynuacja wzrostowa,100
+52,2025-01-30 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+55,2025-02-04 00:00:00,Marubozu,Wzrostowa,Kontynuacja wzrostowa,100
+55,2025-02-04 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+56,2025-02-05 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+59,2025-02-10 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+60,2025-02-11 00:00:00,Three Inside Up/Down,Wzrostowa,Kontynuacja wzrostowa,100
+61,2025-02-12 00:00:00,Marubozu,Wzrostowa,Kontynuacja wzrostowa,100
+64,2025-02-18 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+64,2025-02-18 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+65,2025-02-19 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+65,2025-02-19 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+67,2025-02-21 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+67,2025-02-21 00:00:00,Gravestone Doji,Wzrostowa,Kontynuacja wzrostowa,100
+68,2025-02-24 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+69,2025-02-25 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+71,2025-02-27 00:00:00,Inverted Hammer,Wzrostowa,Odwrócenie wzrostowe,100
+72,2025-02-28 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+72,2025-02-28 00:00:00,Morning Star,Wzrostowa,Odwrócenie wzrostowe,100
+75,2025-03-05 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+75,2025-03-05 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+76,2025-03-06 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+82,2025-03-14 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+83,2025-03-17 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+83,2025-03-17 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+84,2025-03-18 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+85,2025-03-19 00:00:00,Shooting Star,Spadkowa,Odwrócenie spadkowe,-100
+86,2025-03-20 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+86,2025-03-20 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+87,2025-03-21 00:00:00,Marubozu,Wzrostowa,Kontynuacja wzrostowa,100
+88,2025-03-24 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+88,2025-03-24 00:00:00,Hanging Man,Spadkowa,Odwrócenie spadkowe,-100
+88,2025-03-24 00:00:00,Dragonfly Doji,Wzrostowa,Odwrócenie wzrostowe,100
+88,2025-03-24 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+90,2025-03-26 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+91,2025-03-27 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+93,2025-03-31 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+94,2025-04-01 00:00:00,Three Outside Up/Down,Wzrostowa,Kontynuacja wzrostowa,100
+99,2025-04-08 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+100,2025-04-09 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+101,2025-04-10 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+101,2025-04-10 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+104,2025-04-15 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+104,2025-04-15 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+106,2025-04-17 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+106,2025-04-17 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+107,2025-04-21 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+107,2025-04-21 00:00:00,Hammer,Wzrostowa,Odwrócenie wzrostowe,100
+107,2025-04-21 00:00:00,Dragonfly Doji,Wzrostowa,Odwrócenie wzrostowe,100
+107,2025-04-21 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+109,2025-04-23 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+112,2025-04-28 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+112,2025-04-28 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+116,2025-05-02 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+118,2025-05-06 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+118,2025-05-06 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+119,2025-05-07 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+120,2025-05-08 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+120,2025-05-08 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+120,2025-05-08 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+120,2025-05-08 00:00:00,Harami Cross,Wzrostowa,Kontynuacja wzrostowa,100
+121,2025-05-09 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+121,2025-05-09 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+122,2025-05-12 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+122,2025-05-12 00:00:00,Hanging Man,Spadkowa,Odwrócenie spadkowe,-100
+122,2025-05-12 00:00:00,Dragonfly Doji,Wzrostowa,Odwrócenie wzrostowe,100
+122,2025-05-12 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+123,2025-05-13 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+124,2025-05-14 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+124,2025-05-14 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+124,2025-05-14 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+124,2025-05-14 00:00:00,Harami Cross,Spadkowa,Kontynuacja spadkowa,-100
+125,2025-05-15 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+130,2025-05-22 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+133,2025-05-28 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+133,2025-05-28 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+138,2025-06-04 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+138,2025-06-04 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+138,2025-06-04 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+138,2025-06-04 00:00:00,Harami Cross,Spadkowa,Kontynuacja spadkowa,-100
+139,2025-06-05 00:00:00,Three Inside Up/Down,Spadkowa,Kontynuacja spadkowa,-100
+140,2025-06-06 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+141,2025-06-09 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+143,2025-06-11 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+144,2025-06-12 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+144,2025-06-12 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+144,2025-06-12 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+144,2025-06-12 00:00:00,Harami Cross,Wzrostowa,Kontynuacja wzrostowa,100
+145,2025-06-13 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+146,2025-06-16 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+148,2025-06-18 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+150,2025-06-23 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+150,2025-06-23 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+152,2025-06-25 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+152,2025-06-25 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+152,2025-06-25 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+152,2025-06-25 00:00:00,Harami Cross,Wzrostowa,Kontynuacja wzrostowa,100
+153,2025-06-26 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+154,2025-06-27 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+160,2025-07-08 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+160,2025-07-08 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+160,2025-07-08 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+160,2025-07-08 00:00:00,Harami Cross,Wzrostowa,Kontynuacja wzrostowa,100
+161,2025-07-09 00:00:00,Engulfing,Wzrostowa,Kontynuacja wzrostowa,100
+162,2025-07-10 00:00:00,Three Outside Up/Down,Wzrostowa,Kontynuacja wzrostowa,100
+163,2025-07-11 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+163,2025-07-11 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+164,2025-07-14 00:00:00,Three Inside Up/Down,Spadkowa,Kontynuacja spadkowa,-100
+165,2025-07-15 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+165,2025-07-15 00:00:00,Gravestone Doji,Wzrostowa,Kontynuacja wzrostowa,100
+165,2025-07-15 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+166,2025-07-16 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+166,2025-07-16 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+168,2025-07-18 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+168,2025-07-18 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+169,2025-07-21 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+172,2025-07-24 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+172,2025-07-24 00:00:00,Inverted Hammer,Wzrostowa,Odwrócenie wzrostowe,100
+172,2025-07-24 00:00:00,Gravestone Doji,Wzrostowa,Kontynuacja wzrostowa,100
+172,2025-07-24 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+174,2025-07-28 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+174,2025-07-28 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+174,2025-07-28 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+174,2025-07-28 00:00:00,Harami Cross,Wzrostowa,Kontynuacja wzrostowa,100
+175,2025-07-29 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+176,2025-07-30 00:00:00,Three Outside Up/Down,Spadkowa,Kontynuacja spadkowa,-100
+179,2025-08-04 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+179,2025-08-04 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+180,2025-08-05 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+184,2025-08-11 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+184,2025-08-11 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+190,2025-08-19 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+191,2025-08-20 00:00:00,Marubozu,Spadkowa,Kontynuacja spadkowa,-100
+198,2025-08-29 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+198,2025-08-29 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+198,2025-08-29 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+198,2025-08-29 00:00:00,Harami Cross,Spadkowa,Kontynuacja spadkowa,-100
+199,2025-09-02 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+201,2025-09-04 00:00:00,Hanging Man,Spadkowa,Odwrócenie spadkowe,-100
+202,2025-09-05 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+202,2025-09-05 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+208,2025-09-15 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+208,2025-09-15 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+210,2025-09-17 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+210,2025-09-17 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+211,2025-09-18 00:00:00,Engulfing,Spadkowa,Kontynuacja spadkowa,-100
+214,2025-09-23 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+217,2025-09-26 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+218,2025-09-29 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+218,2025-09-29 00:00:00,Hammer,Wzrostowa,Odwrócenie wzrostowe,100
+218,2025-09-29 00:00:00,Dragonfly Doji,Wzrostowa,Odwrócenie wzrostowe,100
+218,2025-09-29 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+219,2025-09-30 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+219,2025-09-30 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+220,2025-10-01 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+220,2025-10-01 00:00:00,Shooting Star,Spadkowa,Odwrócenie spadkowe,-100
+220,2025-10-01 00:00:00,Gravestone Doji,Wzrostowa,Kontynuacja wzrostowa,100
+221,2025-10-02 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+223,2025-10-06 00:00:00,Harami,Spadkowa,Kontynuacja spadkowa,-100
+224,2025-10-07 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+224,2025-10-07 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+228,2025-10-13 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+230,2025-10-15 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+230,2025-10-15 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+236,2025-10-23 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+236,2025-10-23 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+236,2025-10-23 00:00:00,Harami,Wzrostowa,Kontynuacja wzrostowa,100
+236,2025-10-23 00:00:00,Harami Cross,Wzrostowa,Kontynuacja wzrostowa,100
+237,2025-10-24 00:00:00,Three Inside Up/Down,Wzrostowa,Kontynuacja wzrostowa,100
+238,2025-10-27 00:00:00,Marubozu,Wzrostowa,Kontynuacja wzrostowa,100
+239,2025-10-28 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+239,2025-10-28 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+240,2025-10-29 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+240,2025-10-29 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+241,2025-10-30 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+243,2025-11-03 00:00:00,Hammer,Wzrostowa,Odwrócenie wzrostowe,100
+245,2025-11-05 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+247,2025-11-07 00:00:00,Spinning Top,Spadkowa,Kontynuacja spadkowa,-100
+248,2025-11-10 00:00:00,Doji,Wzrostowa,Kontynuacja wzrostowa,100
+248,2025-11-10 00:00:00,Spinning Top,Wzrostowa,Kontynuacja wzrostowa,100
+250,2025-11-12 00:00:00,Marubozu,Spadkowa,Kontynuacja spadkowa,-100
