@@ -8,6 +8,8 @@ import mplfinance as mpf
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+import matplotlib.dates as mdates
+from matplotlib.patches import Patch
 
 class CandlestickModel:
     """Model odpowiedzialny za analizę formacji świecowych"""
@@ -434,7 +436,54 @@ class CandlestickModel:
             traceback.print_exc()
             return ""
 
-    
+    def generate_interactive_chart(self) -> str:
+        """Generuje interaktywny wykres używając Plotly"""
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+        
+        if self.data is None:
+            return ""
+        
+        max_candles = min(200, len(self.data))
+        plot_data = self.data.tail(max_candles)
+        
+        # Utwórz wykres świecowy
+        fig = go.Figure(data=[go.Candlestick(
+            x=plot_data.index,
+            open=plot_data['open'],
+            high=plot_data['high'],
+            low=plot_data['low'],
+            close=plot_data['close'],
+            name='OHLC'
+        )])
+        
+        # Dodaj markery formacji
+        for pattern_name, values in self.patterns.items():
+            pattern_subset = values[-max_candles:]
+            indices = np.where(pattern_subset != 0)[0]
+            
+            for idx in indices:
+                if idx < len(plot_data):
+                    signal = pattern_subset[idx]
+                    fig.add_annotation(
+                        x=plot_data.index[idx],
+                        y=plot_data['high'].iloc[idx] if signal < 0 else plot_data['low'].iloc[idx],
+                        text='▼' if signal < 0 else '▲',
+                        showarrow=False,
+                        font=dict(size=20, color='red' if signal < 0 else 'green')
+                    )
+        
+        fig.update_layout(
+            title='Wykres świecowy z formacjami (interaktywny)',
+            yaxis_title='Cena',
+            xaxis_title='Data',
+            height=700,
+            template='plotly_white'
+        )
+        
+        return fig.to_html(include_plotlyjs='cdn', div_id='candlestick-chart')
+
+
     def export_results(self, filepath: str) -> bool:
         """Eksportuje wyniki do pliku CSV"""
         try:
