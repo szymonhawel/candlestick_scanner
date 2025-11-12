@@ -255,103 +255,149 @@ class CandlestickModel:
     def generate_chart(self, chart_type: str = 'candlestick') -> str:
         """Generuje wykres świecowy z oznaczonymi formacjami"""
         if self.data is None or len(self.data) == 0:
+            print("Brak danych do wygenerowania wykresu")
             return ""
         
         try:
-            # Przygotuj dane dla mplfinance (ostatnie 100-200 świec dla czytelności)
-            max_candles = min(200, len(self.data))
+            # Dostosuj liczbę świec do dostępnych danych
+            available_candles = len(self.data)
+            
+            # Dla krótszych okresów pokaż wszystkie dane
+            if available_candles <= 100:
+                max_candles = available_candles
+            else:
+                max_candles = min(200, available_candles)
+            
+            print(f"Generowanie wykresu dla {max_candles} świec (dostępne: {available_candles})")
+            
+            # Przygotuj dane
             plot_data = self.data.tail(max_candles)[['open', 'high', 'low', 'close']].copy()
             
+            # Sprawdź czy są jakiekolwiek dane
+            if plot_data.empty or len(plot_data) < 2:
+                print("Za mało danych do wygenerowania wykresu (minimum 2 świece)")
+                return ""
+            
             # Dodaj volume jeśli dostępne
+            show_volume = False
             if 'volume' in self.data.columns:
-                plot_data['volume'] = self.data['volume'].tail(max_candles)
-                show_volume = True
-            else:
-                show_volume = False
+                volume_data = self.data['volume'].tail(max_candles)
+                if not volume_data.isna().all() and (volume_data > 0).any():
+                    plot_data['volume'] = volume_data
+                    show_volume = True
             
-            # Przygotuj markery dla formacji świecowych
-            apds = []  # Lista dla addplot
+            # Przygotuj listy dla markerów
+            apds = []
             
-            # Zbierz wszystkie formacje w jednym przebiegu
-            bullish_markers = []
-            bearish_markers = []
-            
-            for pattern_name, values in self.patterns.items():
-                pattern_subset = values[-max_candles:] if len(values) > max_candles else values
-                indices = np.where(pattern_subset != 0)[0]
+            # Zbierz formacje tylko jeśli istnieją
+            if self.patterns:
+                bullish_prices = []
+                bearish_prices = []
                 
-                for idx in indices:
-                    if idx < len(plot_data):
-                        signal = pattern_subset[idx]
-                        # Umieść marker poniżej/powyżej świecy z marginesem
-                        if signal > 0:  # Wzrostowa
-                            marker_price = plot_data['low'].iloc[idx] * 0.995
-                            bullish_markers.append(marker_price)
-                        else:  # Spadkowa
-                            marker_price = plot_data['high'].iloc[idx] * 1.005
-                            bearish_markers.append(marker_price)
-                    else:
-                        bullish_markers.append(np.nan)
-                        bearish_markers.append(np.nan)
+                # Iteruj przez wszystkie formacje
+                for pattern_name, values in self.patterns.items():
+                    # Weź tylko ostatnie wartości odpowiadające zakresowi wykresu
+                    pattern_subset = values[-max_candles:] if len(values) > max_candles else values
+                    
+                    # Dopasuj długość
+                    if len(pattern_subset) < len(plot_data):
+                        # Dodaj NaN na początku
+                        pattern_subset = np.concatenate([
+                            np.full(len(plot_data) - len(pattern_subset), 0),
+                            pattern_subset
+                        ])
+                    elif len(pattern_subset) > len(plot_data):
+                        pattern_subset = pattern_subset[-len(plot_data):]
+                    
+                    # Znajdź indeksy formacji
+                    indices = np.where(pattern_subset != 0)[0]
+                    
+                    for idx in indices:
+                        if idx < len(plot_data):
+                            signal = pattern_subset[idx]
+                            try:
+                                if signal > 0:  # Wzrostowa
+                                    marker_price = float(plot_data['low'].iloc[idx] * 0.995)
+                                    bullish_prices.append((idx, marker_price))
+                                else:  # Spadkowa
+                                    marker_price = float(plot_data['high'].iloc[idx] * 1.005)
+                                    bearish_prices.append((idx, marker_price))
+                            except Exception as e:
+                                print(f"Błąd przy dodawaniu markera: {e}")
+                                continue
+                
+                # Utwórz serie dla markerów
+                if bullish_prices:
+                    bullish_series = pd.Series(np.nan, index=plot_data.index)
+                    for idx, price in bullish_prices:
+                        bullish_series.iloc[idx] = price
+                    
+                    # Dodaj tylko jeśli są niepuste wartości
+                    if not bullish_series.isna().all():
+                        apds.append(mpf.make_addplot(
+                            bullish_series,
+                            type='scatter',
+                            markersize=80,
+                            marker='^',
+                            color='green',
+                            alpha=0.7,
+                            panel=0
+                        ))
+                
+                if bearish_prices:
+                    bearish_series = pd.Series(np.nan, index=plot_data.index)
+                    for idx, price in bearish_prices:
+                        bearish_series.iloc[idx] = price
+                    
+                    if not bearish_series.isna().all():
+                        apds.append(mpf.make_addplot(
+                            bearish_series,
+                            type='scatter',
+                            markersize=80,
+                            marker='v',
+                            color='red',
+                            alpha=0.7,
+                            panel=0
+                        ))
             
-            # Wyrównaj długość do plot_data
-            while len(bullish_markers) < len(plot_data):
-                bullish_markers.insert(0, np.nan)
-            while len(bearish_markers) < len(plot_data):
-                bearish_markers.insert(0, np.nan)
-            
-            bullish_markers = bullish_markers[:len(plot_data)]
-            bearish_markers = bearish_markers[:len(plot_data)]
-            
-            # Dodaj markery jako scatter plot
-            if any(~np.isnan(bullish_markers)):
-                apds.append(mpf.make_addplot(
-                    bullish_markers,
-                    type='scatter',
-                    markersize=80,
-                    marker='^',
-                    color='green',
-                    alpha=0.7,
-                    panel=0
-                ))
-            
-            if any(~np.isnan(bearish_markers)):
-                apds.append(mpf.make_addplot(
-                    bearish_markers,
-                    type='scatter',
-                    markersize=80,
-                    marker='v',
-                    color='red',
-                    alpha=0.7,
-                    panel=0
-                ))
-            
-            # Dodaj linie wsparcia/oporu
+            # Przygotuj linie wsparcia/oporu
             hlines_dict = None
             if self.support_resistance_levels:
-                # Ogranicz do 8 najbardziej znaczących poziomów
-                levels_sorted = sorted(self.support_resistance_levels, 
-                                    key=lambda x: abs(x[0] - plot_data['close'].iloc[-1]))[:8]
+                current_price = float(plot_data['close'].iloc[-1])
+                price_range = float(plot_data['high'].max() - plot_data['low'].min())
                 
-                support_lines = [level for level, typ in levels_sorted if typ == 'Wsparcie']
-                resistance_lines = [level for level, typ in levels_sorted if typ == 'Opór']
+                # Filtruj poziomy w zakresie +/- 20% od obecnej ceny
+                relevant_levels = [
+                    (level, typ) for level, typ in self.support_resistance_levels
+                    if abs(level - current_price) <= price_range * 0.5
+                ]
                 
-                all_lines = support_lines + resistance_lines
-                colors = ['green'] * len(support_lines) + ['red'] * len(resistance_lines)
+                # Ogranicz do 8 poziomów
+                relevant_levels = sorted(
+                    relevant_levels,
+                    key=lambda x: abs(x[0] - current_price)
+                )[:8]
                 
-                if all_lines:
-                    hlines_dict = dict(
-                        hlines=all_lines,
-                        colors=colors,
-                        alpha=0.3,
-                        linestyle='--',
-                        linewidths=1
-                    )
+                if relevant_levels:
+                    support_lines = [level for level, typ in relevant_levels if typ == 'Wsparcie']
+                    resistance_lines = [level for level, typ in relevant_levels if typ == 'Opór']
+                    
+                    all_lines = support_lines + resistance_lines
+                    colors = ['green'] * len(support_lines) + ['red'] * len(resistance_lines)
+                    
+                    if all_lines:
+                        hlines_dict = dict(
+                            hlines=all_lines,
+                            colors=colors,
+                            alpha=0.3,
+                            linestyle='--',
+                            linewidths=1
+                        )
             
             # Konfiguracja stylu
             mc = mpf.make_marketcolors(
-                up='#26a69a',      # Zielony (wzrost)
-                down='#ef5350',    # Czerwony (spadek)
+                up='#26a69a',
+                down='#ef5350',
                 edge='inherit',
                 wick='inherit',
                 volume='in',
@@ -375,50 +421,69 @@ class CandlestickModel:
                 }
             )
             
+            # Dostosuj rozmiar wykresu do ilości danych
+            if max_candles <= 50:
+                figsize = (12, 7)
+            elif max_candles <= 100:
+                figsize = (14, 8)
+            else:
+                figsize = (16, 9)
+            
             # Generuj wykres
             fig, axes = mpf.plot(
                 plot_data,
                 type='candle',
                 style=style,
-                title='Wykres świecowy z wykrytymi formacjami',
+                title=f'Wykres świecowy z wykrytymi formacjami ({max_candles} świec)',
                 ylabel='Cena',
                 ylabel_lower='Wolumen' if show_volume else '',
                 volume=show_volume,
-                figsize=(14, 8),
-                datetime_format='%Y-%m-%d',
+                figsize=figsize,
+                datetime_format='%Y-%m-%d' if max_candles > 60 else '%Y-%m-%d',
                 xrotation=15,
                 tight_layout=True,
                 returnfig=True,
                 addplot=apds if apds else None,
                 hlines=hlines_dict,
-                warn_too_much_data=len(plot_data) + 100  # Zwiększ limit ostrzeżeń
+                warn_too_much_data=max_candles + 1000
             )
             
-            # Dostosuj formatowanie osi X
+            # Formatowanie osi
             if axes:
                 ax_main = axes[0]
                 
-                # Lepsze formatowanie dat
+                # Dostosuj formatowanie dat do ilości danych
                 import matplotlib.dates as mdates
-                ax_main.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-                ax_main.xaxis.set_major_locator(mdates.AutoDateLocator())
+                if max_candles <= 30:
+                    ax_main.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+                    ax_main.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, max_candles // 10)))
+                elif max_candles <= 90:
+                    ax_main.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+                    ax_main.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+                else:
+                    ax_main.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+                    ax_main.xaxis.set_major_locator(mdates.MonthLocator())
                 
-                # Dodaj legendę dla markerów
+                # Legenda
                 from matplotlib.patches import Patch
-                legend_elements = [
-                    Patch(facecolor='green', alpha=0.7, label='Formacje wzrostowe'),
-                    Patch(facecolor='red', alpha=0.7, label='Formacje spadkowe')
-                ]
+                legend_elements = []
                 
-                if self.support_resistance_levels:
+                if apds:  # Tylko jeśli są markery
+                    legend_elements.extend([
+                        Patch(facecolor='green', alpha=0.7, label='Formacje wzrostowe'),
+                        Patch(facecolor='red', alpha=0.7, label='Formacje spadkowe')
+                    ])
+                
+                if hlines_dict:
                     legend_elements.extend([
                         Patch(facecolor='green', alpha=0.3, label='Wsparcie'),
                         Patch(facecolor='red', alpha=0.3, label='Opór')
                     ])
                 
-                ax_main.legend(handles=legend_elements, loc='upper left', fontsize=9)
+                if legend_elements:
+                    ax_main.legend(handles=legend_elements, loc='upper left', fontsize=9)
                 
-                # Dodaj grid dla lepszej czytelności
+                # Grid
                 ax_main.grid(True, alpha=0.3, linestyle=':', linewidth=0.5)
             
             # Konwertuj do base64
@@ -428,13 +493,41 @@ class CandlestickModel:
             image_base64 = base64.b64encode(buffer.read()).decode()
             plt.close(fig)
             
+            print("✓ Wykres wygenerowany pomyślnie")
             return f"data:image/png;base64,{image_base64}"
             
         except Exception as e:
             print(f"Błąd generowania wykresu: {e}")
             import traceback
             traceback.print_exc()
-            return ""
+            
+            # Spróbuj wygenerować prosty wykres bez dodatków
+            try:
+                print("Próba wygenerowania prostego wykresu bez markerów...")
+                simple_data = self.data.tail(min(100, len(self.data)))[['open', 'high', 'low', 'close']]
+                
+                fig, axes = mpf.plot(
+                    simple_data,
+                    type='candle',
+                    style='charles',
+                    title='Wykres świecowy (tryb awaryjny)',
+                    figsize=(12, 6),
+                    returnfig=True
+                )
+                
+                buffer = BytesIO()
+                plt.savefig(buffer, format='png', bbox_inches='tight', dpi=100)
+                buffer.seek(0)
+                image_base64 = base64.b64encode(buffer.read()).decode()
+                plt.close(fig)
+                
+                print("✓ Wygenerowano prosty wykres")
+                return f"data:image/png;base64,{image_base64}"
+                
+            except Exception as e2:
+                print(f"Błąd przy generowaniu prostego wykresu: {e2}")
+                return ""
+
 
     def generate_interactive_chart(self) -> str:
         """Generuje interaktywny wykres używając Plotly"""
