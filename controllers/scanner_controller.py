@@ -111,18 +111,72 @@ class ScannerController:
         )
     
     def export_results(self):
-        """Eksport wyników do pliku"""
+        """Eksport wyników do pliku CSV"""
         if self.model.data is None:
             return jsonify({'error': 'Brak danych do eksportu'}), 400
         
-        export_path = os.path.join(self.app.config['UPLOAD_FOLDER'], 'wyniki_analizy.xlsx')
-        
-        if self.model.export_results(export_path):
-            return send_file(export_path, as_attachment=True, download_name='wyniki_analizy.xlsx')
-        else:
-            # Fallback do CSV
-            export_path = export_path.replace('.xlsx', '.csv')
-            return send_file(export_path, as_attachment=True, download_name='wyniki_analizy.csv')
+        try:
+            import os
+            
+            # Upewnij się, że wykryto formacje
+            if not self.model.patterns:
+                self.model.detect_patterns()
+                self.model.calculate_support_resistance()
+            
+            # Sprawdź czy są jakiekolwiek formacje
+            interpretations = self.model.interpret_patterns()
+            if not interpretations:
+                return jsonify({'error': 'Nie wykryto żadnych formacji do eksportu'}), 400
+            
+            # Przygotuj ścieżkę
+            export_dir = self.app.config['UPLOAD_FOLDER']
+            os.makedirs(export_dir, exist_ok=True)
+            
+            # Plik wynikowy
+            export_filename = 'wyniki_analizy.xlsx'
+            export_path = os.path.join(export_dir, export_filename)
+            
+            print(f"=== Eksport wyników ===")
+            print(f"Folder: {export_dir} (istnieje: {os.path.exists(export_dir)})")
+            print(f"Docelowa ścieżka: {export_path}")
+            
+            # Eksportuj - metoda zwróci rzeczywistą ścieżkę pliku (CSV lub XLSX)
+            actual_path = self.model.export_results(export_path)
+            
+            if not actual_path or not os.path.exists(actual_path):
+                print(f"❌ Eksport nie powiódł się")
+                return jsonify({'error': 'Nie udało się utworzyć pliku eksportu'}), 500
+            
+            print(f"✓ Plik gotowy: {actual_path}")
+            
+            # ← DODAJ TEN BLOK - Wyodrębnij rzeczywistą nazwę pliku
+            actual_filename = os.path.basename(actual_path)
+            print(f"✓ Rzeczywista nazwa pliku: {actual_filename}")
+            
+            # Określ typ pliku
+            if actual_path.endswith('.csv'):
+                mimetype = 'text/csv'
+                download_name = actual_filename  # ← ZMIENIONO z 'wyniki_analizy.csv'
+            else:
+                mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                download_name = actual_filename  # ← ZMIENIONO z 'wyniki_analizy.xlsx'
+            
+            print(f"✓ Nazwa do pobrania: {download_name}")
+            
+            # Wyślij plik
+            return send_file(
+                actual_path,
+                as_attachment=True,
+                download_name=download_name,  # ← Teraz używa rzeczywistej nazwy
+                mimetype=mimetype
+            )
+            
+        except Exception as e:
+            print(f"❌ Błąd w export_results: {e}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({'error': f'Błąd: {str(e)}'}), 500
+
     
     def _allowed_file(self, filename):
         """Sprawdza czy rozszerzenie pliku jest dozwolone"""

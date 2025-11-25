@@ -1,4 +1,3 @@
-# Candlestick model implementation
 import talib
 import pandas as pd
 import numpy as np
@@ -6,10 +5,10 @@ import yfinance as yf
 from typing import Dict, List, Tuple
 import mplfinance as mpf
 import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
 import matplotlib.dates as mdates
 from matplotlib.patches import Patch
+from io import BytesIO
+import base64
 
 class CandlestickModel:
     """Model odpowiedzialny za analizę formacji świecowych"""
@@ -18,24 +17,44 @@ class CandlestickModel:
         self.data = None
         self.patterns = {}
         self.support_resistance_levels = []
+        self.source_filename = None
     
     def load_data_from_file(self, filepath: str) -> bool:
         """Wczytuje dane z pliku CSV z elastycznym rozpoznawaniem kolumn"""
         try:
+            # Spróbuj wykryć separator
+            with open(filepath, 'r', encoding='utf-8') as f:
+                first_line = f.readline().strip()
+            
+            # Wybierz separator
+            if ';' in first_line and first_line.count(';') > first_line.count(','):
+                separator = ';'
+                print("Wykryto separator: średnik (;)")
+            else:
+                separator = ','
+                print("Wykryto separator: przecinek (,)")
+            
             # Wczytaj dane
-            self.data = pd.read_csv(filepath)
+            self.data = pd.read_csv(filepath, sep=separator)
             
             print(f"Oryginalne kolumny: {list(self.data.columns)}")
             
-            # Konwertuj nazwy kolumn na małe litery dla porównania
+            # Wyczyść nazwy kolumn (usuń białe znaki, znaki specjalne)
             self.data.columns = self.data.columns.str.strip().str.lower()
+            
+            # Zamień problematyczne znaki w nazwach kolumn
+            self.data.columns = self.data.columns.str.replace('/', '_', regex=False)
+            self.data.columns = self.data.columns.str.replace(' ', '_', regex=False)
+            
+            print(f"Kolumny po czyszczeniu: {list(self.data.columns)}")
             
             # Mapowanie możliwych nazw kolumn (różne warianty)
             column_mapping = {
-                'open': ['open', 'open price', 'opening price', 'o', 'opening'],
-                'high': ['high', 'high price', 'highest', 'h', 'hi'],
-                'low': ['low', 'low price', 'lowest', 'l', 'lo'],
-                'close': ['close', 'close price', 'closing price', 'c', 'closing', 'last'],
+                'open': ['open', 'open_price', 'opening_price', 'o', 'opening', 'open price'],
+                'high': ['high', 'high_price', 'highest', 'h', 'hi', 'high price'],
+                'low': ['low', 'low_price', 'lowest', 'l', 'lo', 'low price'],
+                'close': ['close', 'close_price', 'closing_price', 'c', 'closing', 'last', 
+                        'close_last', 'close/last'],
                 'volume': ['volume', 'vol', 'v', 'quantity', 'qty', 'shares'],
                 'date': ['date', 'datetime', 'time', 'timestamp', 'day']
             }
@@ -66,12 +85,28 @@ class CandlestickModel:
                 print(f"Dostępne kolumny: {list(self.data.columns)}")
                 return False
             
-            # Konwersja do odpowiednich typów numerycznych
+            # NOWE: Czyszczenie wartości przed konwersją
             for col in required_cols:
-                self.data[col] = pd.to_numeric(self.data[col], errors='coerce')
+                if col in self.data.columns:
+                    # Usuń znaki dolara, przecinki i inne symbole walut
+                    if self.data[col].dtype == 'object':
+                        self.data[col] = self.data[col].astype(str).str.replace('$', '', regex=False)
+                        self.data[col] = self.data[col].str.replace('€', '', regex=False)
+                        self.data[col] = self.data[col].str.replace('£', '', regex=False)
+                        self.data[col] = self.data[col].str.replace(',', '', regex=False)
+                        self.data[col] = self.data[col].str.strip()
+                    
+                    # Konwertuj do liczb
+                    self.data[col] = pd.to_numeric(self.data[col], errors='coerce')
             
             # Konwersja volume jeśli istnieje
             if 'volume' in self.data.columns:
+                if self.data['volume'].dtype == 'object':
+                    # Usuń znaki dolara, przecinki
+                    self.data['volume'] = self.data['volume'].astype(str).str.replace('$', '', regex=False)
+                    self.data['volume'] = self.data['volume'].astype(str).str.replace(',', '', regex=False)
+                    self.data['volume'] = self.data['volume'].str.strip()
+                
                 self.data['volume'] = pd.to_numeric(self.data['volume'], errors='coerce')
             
             # Obsługa kolumny daty
@@ -85,12 +120,16 @@ class CandlestickModel:
             
             if date_col_found:
                 try:
-                    # Próbuj różnych formatów daty
+                    # Próbuj różnych formatów daty (automatyczne wykrywanie)
                     self.data[date_col_found] = pd.to_datetime(
                         self.data[date_col_found], 
                         errors='coerce',
                         infer_datetime_format=True
                     )
+                    
+                    # Sortuj po dacie rosnąco (od najstarszej do najnowszej)
+                    self.data.sort_values(by=date_col_found, inplace=True)
+                    
                     self.data.set_index(date_col_found, inplace=True)
                     print(f"✓ Ustawiono indeks na kolumnę: {date_col_found}")
                 except Exception as e:
@@ -111,9 +150,24 @@ class CandlestickModel:
                 print("❌ Brak poprawnych danych po czyszczeniu")
                 return False
             
-            print(f"✓ Wczytano {len(self.data)} wierszy danych")
-            print(f"Zakres dat: {self.data.index[0]} do {self.data.index[-1]}")
+            # Sprawdź zakres wartości (podstawowa walidacja)
+            for col in required_cols:
+                min_val = self.data[col].min()
+                max_val = self.data[col].max()
+                
+                if min_val <= 0:
+                    print(f"⚠ Ostrzeżenie: Kolumna {col} zawiera wartości <= 0 (min: {min_val})")
+                
+                print(f"  {col}: min={min_val:.2f}, max={max_val:.2f}")
             
+            print(f"✓ Wczytano {len(self.data)} wierszy danych")
+            if hasattr(self.data.index, '__getitem__') and len(self.data) > 0:
+                print(f"Zakres dat: {self.data.index[0]} do {self.data.index[-1]}")
+            
+            import os
+            self.source_filename = os.path.splitext(os.path.basename(filepath))[0]
+            print(f"Nazwa źródła: {self.source_filename}")
+
             return True
             
         except Exception as e:
@@ -157,14 +211,16 @@ class CandlestickModel:
                 return False
             
             print(f"✓ Pobrano {len(self.data)} wierszy danych dla {ticker}")
+
+            self.source_filename = f"{ticker}_{period}"
+            
             return True
             
         except Exception as e:
             print(f"Błąd pobierania danych: {e}")
             import traceback
-            traceback.print_exc()  # Pokaż pełny traceback dla debugowania
+            traceback.print_exc()
             return False
-
     
     def detect_patterns(self) -> Dict[str, pd.Series]:
         """Wykrywa formacje świecowe przy użyciu TA-Lib"""
@@ -353,6 +409,26 @@ class CandlestickModel:
             # Przygotuj dane
             plot_data = self.data.tail(max_candles)[['open', 'high', 'low', 'close']].copy()
             
+            # KRYTYCZNE: Upewnij się, że indeks jest DatetimeIndex
+            if not isinstance(plot_data.index, pd.DatetimeIndex):
+                print("⚠ Indeks nie jest DatetimeIndex - próbuję konwersji...")
+                try:
+                    plot_data.index = pd.to_datetime(plot_data.index)
+                    print("✓ Indeks przekonwertowany na DatetimeIndex")
+                except:
+                    print("❌ Nie udało się przekonwertować indeksu na DatetimeIndex")
+                    # Utwórz sztuczny indeks dat
+                    plot_data.index = pd.date_range(
+                        start='2024-01-01', 
+                        periods=len(plot_data), 
+                        freq='D'
+                    )
+                    print("✓ Utworzono sztuczny DatetimeIndex")
+            
+            # Weryfikacja typu indeksu
+            print(f"Typ indeksu: {type(plot_data.index)}")
+            print(f"Zakres dat w wykresie: {plot_data.index[0]} do {plot_data.index[-1]}")
+            
             # Sprawdź czy są jakiekolwiek dane
             if plot_data.empty or len(plot_data) < 2:
                 print("Za mało danych do wygenerowania wykresu (minimum 2 świece)")
@@ -446,7 +522,7 @@ class CandlestickModel:
                 current_price = float(plot_data['close'].iloc[-1])
                 price_range = float(plot_data['high'].max() - plot_data['low'].min())
                 
-                # Filtruj poziomy w zakresie +/- 20% od obecnej ceny
+                # Filtruj poziomy w zakresie +/- 50% od zakresu cen
                 relevant_levels = [
                     (level, typ) for level, typ in self.support_resistance_levels
                     if abs(level - current_price) <= price_range * 0.5
@@ -519,7 +595,7 @@ class CandlestickModel:
                 ylabel_lower='Wolumen' if show_volume else '',
                 volume=show_volume,
                 figsize=figsize,
-                datetime_format='%Y-%m-%d' if max_candles > 60 else '%Y-%m-%d',
+                datetime_format='%Y-%m-%d',
                 xrotation=15,
                 tight_layout=True,
                 returnfig=True,
@@ -528,24 +604,18 @@ class CandlestickModel:
                 warn_too_much_data=max_candles + 1000
             )
             
-            # Formatowanie osi
+            # Formatowanie osi - NIE używaj mdates jeśli mplfinance już ustawił daty
             if axes:
                 ax_main = axes[0]
                 
-                # Dostosuj formatowanie dat do ilości danych
-                import matplotlib.dates as mdates
-                if max_candles <= 30:
-                    ax_main.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-                    ax_main.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, max_candles // 10)))
-                elif max_candles <= 90:
-                    ax_main.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-                    ax_main.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
-                else:
-                    ax_main.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-                    ax_main.xaxis.set_major_locator(mdates.MonthLocator())
+                # Sprawdź czy oś X jest poprawnie ustawiona
+                xlim = ax_main.get_xlim()
+                print(f"Zakres osi X: {xlim}")
+                
+                # NIE formatuj ponownie - mplfinance już to zrobił
+                # Dodaj tylko legendę i grid
                 
                 # Legenda
-                from matplotlib.patches import Patch
                 legend_elements = []
                 
                 if apds:  # Tylko jeśli są markery
@@ -584,7 +654,11 @@ class CandlestickModel:
             # Spróbuj wygenerować prosty wykres bez dodatków
             try:
                 print("Próba wygenerowania prostego wykresu bez markerów...")
-                simple_data = self.data.tail(min(100, len(self.data)))[['open', 'high', 'low', 'close']]
+                simple_data = self.data.tail(min(100, len(self.data)))[['open', 'high', 'low', 'close']].copy()
+                
+                # Upewnij się, że indeks jest DatetimeIndex
+                if not isinstance(simple_data.index, pd.DatetimeIndex):
+                    simple_data.index = pd.to_datetime(simple_data.index)
                 
                 fig, axes = mpf.plot(
                     simple_data,
@@ -608,81 +682,69 @@ class CandlestickModel:
                 print(f"Błąd przy generowaniu prostego wykresu: {e2}")
                 return ""
 
-
-    def generate_interactive_chart(self) -> str:
-        """Generuje interaktywny wykres używając Plotly"""
-        import plotly.graph_objects as go
-        from plotly.subplots import make_subplots
-        
-        if self.data is None:
-            return ""
-        
-        max_candles = min(200, len(self.data))
-        plot_data = self.data.tail(max_candles)
-        
-        # Utwórz wykres świecowy
-        fig = go.Figure(data=[go.Candlestick(
-            x=plot_data.index,
-            open=plot_data['open'],
-            high=plot_data['high'],
-            low=plot_data['low'],
-            close=plot_data['close'],
-            name='OHLC'
-        )])
-        
-        # Dodaj markery formacji
-        for pattern_name, values in self.patterns.items():
-            pattern_subset = values[-max_candles:]
-            indices = np.where(pattern_subset != 0)[0]
-            
-            for idx in indices:
-                if idx < len(plot_data):
-                    signal = pattern_subset[idx]
-                    fig.add_annotation(
-                        x=plot_data.index[idx],
-                        y=plot_data['high'].iloc[idx] if signal < 0 else plot_data['low'].iloc[idx],
-                        text='▼' if signal < 0 else '▲',
-                        showarrow=False,
-                        font=dict(size=20, color='red' if signal < 0 else 'green')
-                    )
-        
-        fig.update_layout(
-            title='Wykres świecowy z formacjami (interaktywny)',
-            yaxis_title='Cena',
-            xaxis_title='Data',
-            height=700,
-            template='plotly_white'
-        )
-        
-        return fig.to_html(include_plotlyjs='cdn', div_id='candlestick-chart')
-
-
-    def export_results(self, filepath: str) -> bool:
-        """Eksportuje wyniki do pliku CSV"""
+    
+    def export_results(self, filepath: str) -> str:
+        """Eksportuje wyniki do pliku CSV (najprostsza wersja)"""
         try:
-            interpretations = self.interpret_patterns()
-            effectiveness = self.verify_pattern_effectiveness()
+            import os
+        
+            # Upewnij się, że folder istnieje
+            directory = os.path.dirname(filepath)
+            if directory and not os.path.exists(directory):
+                os.makedirs(directory, exist_ok=True)
+                print(f"✓ Utworzono folder: {directory}")
             
-            # Połącz dane
-            df_interp = pd.DataFrame(interpretations)
-            df_effect = pd.DataFrame(effectiveness)
-            
-            # Zapisz do pliku
-            with pd.ExcelWriter(filepath, engine='openpyxl') as writer:
-                df_interp.to_excel(writer, sheet_name='Formacje', index=False)
-                df_effect.to_excel(writer, sheet_name='Skuteczność', index=False)
+            # ← DODAJ TEN BLOK - Zmodyfikuj nazwę pliku
+            if self.source_filename:
+                # Wyodrębnij folder i rozszerzenie
+                base_name = os.path.basename(filepath)
+                dir_name = os.path.dirname(filepath)
                 
-                # Eksportuj poziomy wsparcia/oporu
-                df_levels = pd.DataFrame(self.support_resistance_levels, columns=['Poziom', 'Typ'])
-                df_levels.to_excel(writer, sheet_name='Wsparcie_Opór', index=False)
+                # Usuń "wyniki_analizy" jeśli istnieje
+                if base_name.startswith('wyniki_analizy'):
+                    # Utwórz nową nazwę z nazwą źródła
+                    new_name = f"wyniki_analizy_{self.source_filename}.csv"
+                else:
+                    # Jeśli inna nazwa, po prostu dodaj źródło
+                    name_without_ext = os.path.splitext(base_name)[0]
+                    new_name = f"{name_without_ext}_{self.source_filename}.csv"
+                
+                filepath = os.path.join(dir_name, new_name)
+                print(f"✓ Zmieniono nazwę pliku na: {new_name}")
             
-            return True
+            # Przygotuj dane
+            interpretations = self.interpret_patterns()
+            
+            if not interpretations:
+                print("⚠ Brak wykrytych formacji do eksportu")
+                return None
+            
+            print(f"Eksportuję {len(interpretations)} formacji...")
+            
+            # Zawsze zapisuj jako CSV (prostsze i zawsze działa)
+            csv_path = filepath.replace('.xlsx', '.csv')
+            
+            # Utwórz DataFrame
+            df = pd.DataFrame(interpretations)
+            
+            # Zapisz do CSV z odpowiednim kodowaniem
+            df.to_csv(csv_path, index=False, encoding='utf-8-sig', sep=';')
+            
+            # Sprawdź czy plik został utworzony
+            if os.path.exists(csv_path):
+                file_size = os.path.getsize(csv_path)
+                print(f"✓ Plik CSV utworzony: {csv_path}")
+                print(f"  Rozmiar: {file_size} bajtów")
+                print(f"  Wierszy: {len(df)}")
+                return csv_path
+            else:
+                print(f"❌ Plik nie istnieje: {csv_path}")
+                return None
+                
         except Exception as e:
-            print(f"Błąd eksportu: {e}")
-            # Fallback do CSV
-            try:
-                df_interp = pd.DataFrame(self.interpret_patterns())
-                df_interp.to_csv(filepath.replace('.xlsx', '.csv'), index=False)
-                return True
-            except:
-                return False
+            print(f"❌ Błąd eksportu: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
+
