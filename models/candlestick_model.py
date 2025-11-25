@@ -709,7 +709,7 @@ class CandlestickModel:
                 print(f"Błąd przy generowaniu prostego wykresu: {e2}")
                 return ""
 
-    def generate_interactive_chart(self, max_candles: int = 200) -> str:
+    def generate_interactive_chart(self, max_candles: int = 1000) -> str:
         """Generuje interaktywny wykres Plotly z tooltipami"""
         # Wyczyść poprzednie wykresy
         self._cleanup_matplotlib()
@@ -724,7 +724,23 @@ class CandlestickModel:
             
             # Przygotuj dane
             available_candles = len(self.data)
-            max_candles = min(max_candles, available_candles)
+            if max_candles is None:
+                # Automatyczny dobór w zależności od ilości danych
+                if available_candles <= 500:
+                    # Do 500 świec - pokaż wszystkie
+                    max_candles = available_candles
+                    print(f"Wykres interaktywny: używam wszystkich {available_candles} świec")
+                elif available_candles <= 2000:
+                    # 500-2000 świec - pokaż wszystkie (Plotly radzi sobie dobrze)
+                    max_candles = available_candles
+                    print(f"Wykres interaktywny: używam wszystkich {available_candles} świec")
+                else:
+                    # Powyżej 2000 - pokaż ostatnie 2000 (dla wydajności)
+                    max_candles = 2000
+                    print(f"Wykres interaktywny: ograniczam do {max_candles} z {available_candles} świec (ostatnie 2000)")
+            else:
+                max_candles = min(max_candles, available_candles)
+                print(f"Wykres interaktywny: używam {max_candles} świec")
             plot_data = self.data.tail(max_candles).copy()
             
             # Upewnij się, że indeks jest DatetimeIndex
@@ -948,7 +964,7 @@ class CandlestickModel:
             
             # Konfiguracja layoutu
             fig.update_layout(
-                title=f'Interaktywny wykres świecowy z wykrytymi formacjami ({max_candles} świec)',
+                title=f'Interaktywny wykres świecowy - {max_candles} świec ({plot_data.index[0].strftime("%Y-%m-%d")} do {plot_data.index[-1].strftime("%Y-%m-%d")})',
                 xaxis_title='Data',
                 yaxis_title='Cena',
                 template='plotly_white',
