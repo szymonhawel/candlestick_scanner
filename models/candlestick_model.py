@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import talib
 import pandas as pd
 import numpy as np
@@ -18,6 +20,20 @@ class CandlestickModel:
         self.patterns = {}
         self.support_resistance_levels = []
         self.source_filename = None
+
+        import matplotlib
+        matplotlib.use('Agg')
+
+    @staticmethod
+    def _cleanup_matplotlib():
+        """Czyści zasoby matplotlib"""
+        try:
+            import matplotlib.pyplot as plt
+            plt.close('all')
+            import gc
+            gc.collect()
+        except:
+            pass
     
     def load_data_from_file(self, filepath: str) -> bool:
         """Wczytuje dane z pliku CSV z elastycznym rozpoznawaniem kolumn"""
@@ -390,6 +406,9 @@ class CandlestickModel:
     
     def generate_chart(self, chart_type: str = 'candlestick') -> str:
         """Generuje wykres świecowy z oznaczonymi formacjami"""
+        # Wyczyść poprzednie wykresy
+        self._cleanup_matplotlib()
+
         if self.data is None or len(self.data) == 0:
             print("Brak danych do wygenerowania wykresu")
             return ""
@@ -642,8 +661,13 @@ class CandlestickModel:
             buffer.seek(0)
             image_base64 = base64.b64encode(buffer.read()).decode()
             plt.close(fig)
+
+            plt.close('all')
+            buffer.close()
             
             print("✓ Wykres wygenerowany pomyślnie")
+
+            
             return f"data:image/png;base64,{image_base64}"
             
         except Exception as e:
@@ -674,6 +698,9 @@ class CandlestickModel:
                 buffer.seek(0)
                 image_base64 = base64.b64encode(buffer.read()).decode()
                 plt.close(fig)
+
+                plt.close('all')
+                buffer.close()
                 
                 print("✓ Wygenerowano prosty wykres")
                 return f"data:image/png;base64,{image_base64}"
@@ -682,7 +709,300 @@ class CandlestickModel:
                 print(f"Błąd przy generowaniu prostego wykresu: {e2}")
                 return ""
 
-    
+    def generate_interactive_chart(self, max_candles: int = 200) -> str:
+        """Generuje interaktywny wykres Plotly z tooltipami"""
+        # Wyczyść poprzednie wykresy
+        self._cleanup_matplotlib()
+
+        if self.data is None or len(self.data) == 0:
+            print("Brak danych do wygenerowania wykresu")
+            return ""
+        
+        try:
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+            
+            # Przygotuj dane
+            available_candles = len(self.data)
+            max_candles = min(max_candles, available_candles)
+            plot_data = self.data.tail(max_candles).copy()
+            
+            # Upewnij się, że indeks jest DatetimeIndex
+            if not isinstance(plot_data.index, pd.DatetimeIndex):
+                try:
+                    plot_data.index = pd.to_datetime(plot_data.index)
+                except:
+                    plot_data.index = pd.date_range(
+                        start='2024-01-01', 
+                        periods=len(plot_data), 
+                        freq='D'
+                    )
+            
+            # Utwórz subplot (z opcjonalnym wolumenem)
+            show_volume = 'volume' in plot_data.columns and not plot_data['volume'].isna().all()
+            
+            if show_volume:
+                fig = make_subplots(
+                    rows=2, cols=1,
+                    shared_xaxes=True,
+                    vertical_spacing=0.03,
+                    row_heights=[0.7, 0.3],
+                    subplot_titles=('Wykres świecowy', 'Wolumen')
+                )
+            else:
+                fig = go.Figure()
+            
+            # Dodaj świeczki
+            candlestick = go.Candlestick(
+                x=plot_data.index,
+                open=plot_data['open'],
+                high=plot_data['high'],
+                low=plot_data['low'],
+                close=plot_data['close'],
+                name='Cena',
+                increasing_line_color='#26a69a',
+                decreasing_line_color='#ef5350',
+                hovertext=[
+                    f"Data: {date.strftime('%Y-%m-%d')}<br>"
+                    f"Open: {o:.2f}<br>"
+                    f"High: {h:.2f}<br>"
+                    f"Low: {l:.2f}<br>"
+                    f"Close: {c:.2f}<br>"
+                    f"Zmiana: {((c-o)/o*100):.2f}%"
+                    for date, o, h, l, c in zip(
+                        plot_data.index,
+                        plot_data['open'],
+                        plot_data['high'],
+                        plot_data['low'],
+                        plot_data['close']
+                    )
+                ],
+                hoverinfo='text'
+            )
+            
+            if show_volume:
+                fig.add_trace(candlestick, row=1, col=1)
+            else:
+                fig.add_trace(candlestick)
+            
+            # Dodaj markery dla formacji
+            if self.patterns:
+                interpretations = self.interpret_patterns()
+                
+                # Przygotuj listy dla wzrostowych i spadkowych formacji
+                bullish_dates = []
+                bullish_prices = []
+                bullish_tooltips = []
+                
+                bearish_dates = []
+                bearish_prices = []
+                bearish_tooltips = []
+                
+                # Dopasuj interpretacje do zakresu wykresu
+                start_idx = len(self.data) - max_candles
+                
+                for interp in interpretations:
+                    idx = interp['index']
+                    
+                    # Pomiń formacje sprzed zakresu wykresu
+                    if idx < start_idx:
+                        continue
+                    
+                    # Dopasuj indeks do plot_data
+                    adjusted_idx = idx - start_idx
+                    
+                    if adjusted_idx >= len(plot_data):
+                        continue
+                    
+                    date = plot_data.index[adjusted_idx]
+                    signal = interp['signal']
+                    pattern_name = interp['pattern']
+                    trend = interp['trend']
+                    pattern_type = interp['type']
+                    
+                    # Pobierz dane cen
+                    open_price = plot_data['open'].iloc[adjusted_idx]
+                    high_price = plot_data['high'].iloc[adjusted_idx]
+                    low_price = plot_data['low'].iloc[adjusted_idx]
+                    close_price = plot_data['close'].iloc[adjusted_idx]
+                    
+                    # Utwórz tooltip
+                    tooltip = (
+                        f"<b>{pattern_name}</b><br>"
+                        f"Data: {date.strftime('%Y-%m-%d')}<br>"
+                        f"Trend: {trend}<br>"
+                        f"Typ: {pattern_type}<br>"
+                        f"Cena: {close_price:.2f}<br>"
+                        f"Range: {low_price:.2f} - {high_price:.2f}"
+                    )
+                    
+                    if signal > 0:  # Wzrostowa
+                        bullish_dates.append(date)
+                        bullish_prices.append(low_price * 0.995)
+                        bullish_tooltips.append(tooltip)
+                    else:  # Spadkowa
+                        bearish_dates.append(date)
+                        bearish_prices.append(high_price * 1.005)
+                        bearish_tooltips.append(tooltip)
+                
+                # Dodaj markery wzrostowe
+                if bullish_dates:
+                    bullish_marker = go.Scatter(
+                        x=bullish_dates,
+                        y=bullish_prices,
+                        mode='markers',
+                        name='Formacje wzrostowe',
+                        marker=dict(
+                            symbol='triangle-up',
+                            size=12,
+                            color='green',
+                            line=dict(width=1, color='darkgreen')
+                        ),
+                        text=bullish_tooltips,
+                        hoverinfo='text',
+                        showlegend=True
+                    )
+                    
+                    if show_volume:
+                        fig.add_trace(bullish_marker, row=1, col=1)
+                    else:
+                        fig.add_trace(bullish_marker)
+                
+                # Dodaj markery spadkowe
+                if bearish_dates:
+                    bearish_marker = go.Scatter(
+                        x=bearish_dates,
+                        y=bearish_prices,
+                        mode='markers',
+                        name='Formacje spadkowe',
+                        marker=dict(
+                            symbol='triangle-down',
+                            size=12,
+                            color='red',
+                            line=dict(width=1, color='darkred')
+                        ),
+                        text=bearish_tooltips,
+                        hoverinfo='text',
+                        showlegend=True
+                    )
+                    
+                    if show_volume:
+                        fig.add_trace(bearish_marker, row=1, col=1)
+                    else:
+                        fig.add_trace(bearish_marker)
+            
+            # Dodaj poziomy wsparcia/oporu
+            if self.support_resistance_levels:
+                current_price = float(plot_data['close'].iloc[-1])
+                price_range = float(plot_data['high'].max() - plot_data['low'].min())
+                
+                # Filtruj poziomy
+                relevant_levels = [
+                    (level, typ) for level, typ in self.support_resistance_levels
+                    if abs(level - current_price) <= price_range * 0.5
+                ]
+                
+                relevant_levels = sorted(
+                    relevant_levels,
+                    key=lambda x: abs(x[0] - current_price)
+                )[:8]
+                
+                for level, level_type in relevant_levels:
+                    color = 'green' if level_type == 'Wsparcie' else 'red'
+                    
+                    if show_volume:
+                        fig.add_hline(
+                            y=level,
+                            line_dash="dash",
+                            line_color=color,
+                            opacity=0.3,
+                            annotation_text=f"{level_type}: {level:.2f}",
+                            annotation_position="right",
+                            row=1, col=1
+                        )
+                    else:
+                        fig.add_hline(
+                            y=level,
+                            line_dash="dash",
+                            line_color=color,
+                            opacity=0.3,
+                            annotation_text=f"{level_type}: {level:.2f}",
+                            annotation_position="right"
+                        )
+            
+            # Dodaj wolumen jeśli dostępny
+            if show_volume:
+                colors = ['green' if close >= open_val else 'red' 
+                        for close, open_val in zip(plot_data['close'], plot_data['open'])]
+                
+                volume_bar = go.Bar(
+                    x=plot_data.index,
+                    y=plot_data['volume'],
+                    name='Wolumen',
+                    marker_color=colors,
+                    opacity=0.5,
+                    hovertemplate='%{x}<br>Wolumen: %{y:,.0f}<extra></extra>'
+                )
+                
+                fig.add_trace(volume_bar, row=2, col=1)
+            
+            # Konfiguracja layoutu
+            fig.update_layout(
+                title=f'Interaktywny wykres świecowy z wykrytymi formacjami ({max_candles} świec)',
+                xaxis_title='Data',
+                yaxis_title='Cena',
+                template='plotly_white',
+                hovermode='x unified',
+                height=700 if show_volume else 600,
+                xaxis_rangeslider_visible=False,
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1
+                )
+            )
+            
+            # Włącz zoom i pan
+            fig.update_xaxes(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=7, label="1T", step="day", stepmode="backward"),
+                        dict(count=1, label="1M", step="month", stepmode="backward"),
+                        dict(count=3, label="3M", step="month", stepmode="backward"),
+                        dict(count=6, label="6M", step="month", stepmode="backward"),
+                        dict(step="all", label="Wszystko")
+                    ])
+                ),
+                type="date"
+            )
+            
+            # Zwróć HTML
+            return fig.to_html(
+                include_plotlyjs='cdn',
+                div_id='interactive-chart',
+                config={
+                    'displayModeBar': True,
+                    'displaylogo': False,
+                    'modeBarButtonsToRemove': ['lasso2d', 'select2d'],
+                    'toImageButtonOptions': {
+                        'format': 'png',
+                        'filename': 'wykres_formacji',
+                        'height': 1000,
+                        'width': 1600,
+                        'scale': 2
+                    }
+                }
+            )
+            
+        except Exception as e:
+            print(f"Błąd generowania interaktywnego wykresu: {e}")
+            import traceback
+            traceback.print_exc()
+            return ""
+
+
     def export_results(self, filepath: str) -> str:
         """Eksportuje wyniki do pliku CSV (najprostsza wersja)"""
         try:

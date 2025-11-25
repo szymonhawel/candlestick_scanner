@@ -79,13 +79,15 @@ class ScannerController:
         
         # Generuj wykres
         chart_image = self.model.generate_chart()
+        interactive_chart = self.model.generate_interactive_chart()
         
         return jsonify({
             'success': True,
             'patterns_count': len(patterns),
             'interpretations': interpretations,
             'effectiveness': effectiveness,
-            'chart': chart_image
+            'chart': chart_image,
+            'interactive_chart': interactive_chart
         }), 200
     
     def results_page(self):
@@ -101,12 +103,14 @@ class ScannerController:
         interpretations = self.model.interpret_patterns()
         effectiveness = self.model.verify_pattern_effectiveness()
         chart = self.model.generate_chart()
+        interactive_chart = self.model.generate_interactive_chart()
         
         return render_template(
             'results.html',
             interpretations=interpretations,
             effectiveness=effectiveness,
             chart=chart,
+            interactive_chart=interactive_chart,
             pattern_count=len(self.model.patterns)
         )
     

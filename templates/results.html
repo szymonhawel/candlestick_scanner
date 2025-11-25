@@ -6,16 +6,30 @@
     <div class="col-md-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Wyniki analizy</h2>
-            <a href="/export" class="btn btn-success">💾 Eksportuj wyniki</a>
+            <a href="/export" class="btn btn-success">Eksportuj wyniki</a>
         </div>
         
         <div class="alert alert-info">
             Wykryto <strong>{{ pattern_count }}</strong> formacji świecowych
         </div>
         
+        <!-- NOWY INTERAKTYWNY WYKRES PLOTLY -->
+        {% if interactive_chart %}
         <div class="card mb-4">
             <div class="card-header">
-                <h5>Wykres świecowy</h5>
+                <h5>Interaktywny wykres świecowy</h5>
+                <small class="text-muted">Najedź myszką na świeczki i markery aby zobaczyć szczegóły. Użyj scroll do zoomowania, przeciągnij aby przesunąć.</small>
+            </div>
+            <div class="card-body p-0">
+                {{ interactive_chart|safe }}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- ORYGINALNY WYKRES JPG (ZACHOWANY) -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Wykres statyczny (JPG)</h5>
             </div>
             <div class="card-body">
                 <img src="{{ chart }}" class="img-fluid" alt="Wykres świecowy">
