@@ -20,28 +20,108 @@ class CandlestickModel:
         self.support_resistance_levels = []
     
     def load_data_from_file(self, filepath: str) -> bool:
-        """Wczytuje dane z pliku CSV"""
+        """Wczytuje dane z pliku CSV z elastycznym rozpoznawaniem kolumn"""
         try:
+            # Wczytaj dane
             self.data = pd.read_csv(filepath)
-            self.data.columns = [col.lower() for col in self.data.columns]
             
-            # Walidacja kolumn
+            print(f"Oryginalne kolumny: {list(self.data.columns)}")
+            
+            # Konwertuj nazwy kolumn na małe litery dla porównania
+            self.data.columns = self.data.columns.str.strip().str.lower()
+            
+            # Mapowanie możliwych nazw kolumn (różne warianty)
+            column_mapping = {
+                'open': ['open', 'open price', 'opening price', 'o', 'opening'],
+                'high': ['high', 'high price', 'highest', 'h', 'hi'],
+                'low': ['low', 'low price', 'lowest', 'l', 'lo'],
+                'close': ['close', 'close price', 'closing price', 'c', 'closing', 'last'],
+                'volume': ['volume', 'vol', 'v', 'quantity', 'qty', 'shares'],
+                'date': ['date', 'datetime', 'time', 'timestamp', 'day']
+            }
+            
+            # Znajdź i zmapuj kolumny
+            renamed_columns = {}
+            
+            for standard_name, possible_names in column_mapping.items():
+                for col in self.data.columns:
+                    # Sprawdź czy kolumna pasuje do którejś z możliwych nazw
+                    if col in possible_names or any(possible in col for possible in possible_names):
+                        renamed_columns[col] = standard_name
+                        break
+            
+            # Zmień nazwy kolumn
+            if renamed_columns:
+                self.data.rename(columns=renamed_columns, inplace=True)
+                print(f"Zmapowane kolumny: {renamed_columns}")
+            
+            print(f"Końcowe kolumny: {list(self.data.columns)}")
+            
+            # Walidacja wymaganych kolumn
             required_cols = ['open', 'high', 'low', 'close']
-            if not all(col in self.data.columns for col in required_cols):
+            missing_cols = [col for col in required_cols if col not in self.data.columns]
+            
+            if missing_cols:
+                print(f"❌ Brak wymaganych kolumn: {missing_cols}")
+                print(f"Dostępne kolumny: {list(self.data.columns)}")
                 return False
             
-            # Konwersja do odpowiednich typów
+            # Konwersja do odpowiednich typów numerycznych
             for col in required_cols:
                 self.data[col] = pd.to_numeric(self.data[col], errors='coerce')
             
-            if 'date' in self.data.columns:
-                self.data['date'] = pd.to_datetime(self.data['date'])
-                self.data.set_index('date', inplace=True)
+            # Konwersja volume jeśli istnieje
+            if 'volume' in self.data.columns:
+                self.data['volume'] = pd.to_numeric(self.data['volume'], errors='coerce')
+            
+            # Obsługa kolumny daty
+            date_cols = ['date', 'datetime', 'time', 'timestamp']
+            date_col_found = None
+            
+            for date_col in date_cols:
+                if date_col in self.data.columns:
+                    date_col_found = date_col
+                    break
+            
+            if date_col_found:
+                try:
+                    # Próbuj różnych formatów daty
+                    self.data[date_col_found] = pd.to_datetime(
+                        self.data[date_col_found], 
+                        errors='coerce',
+                        infer_datetime_format=True
+                    )
+                    self.data.set_index(date_col_found, inplace=True)
+                    print(f"✓ Ustawiono indeks na kolumnę: {date_col_found}")
+                except Exception as e:
+                    print(f"Ostrzeżenie: Nie udało się ustawić indeksu daty: {e}")
+            else:
+                # Jeśli brak kolumny daty, utwórz indeks numeryczny
+                print("⚠ Brak kolumny daty - używam indeksu numerycznego")
+            
+            # Usuń wiersze z NaN w kluczowych kolumnach
+            initial_rows = len(self.data)
+            self.data.dropna(subset=required_cols, inplace=True)
+            dropped_rows = initial_rows - len(self.data)
+            
+            if dropped_rows > 0:
+                print(f"⚠ Usunięto {dropped_rows} wierszy z brakującymi danymi")
+            
+            if len(self.data) == 0:
+                print("❌ Brak poprawnych danych po czyszczeniu")
+                return False
+            
+            print(f"✓ Wczytano {len(self.data)} wierszy danych")
+            print(f"Zakres dat: {self.data.index[0]} do {self.data.index[-1]}")
             
             return True
+            
         except Exception as e:
-            print(f"Błąd wczytywania danych: {e}")
+            print(f"❌ Błąd wczytywania danych: {e}")
+            import traceback
+            traceback.print_exc()
             return False
+
     
     def load_data_from_ticker(self, ticker: str, period: str = '1y') -> bool:
         """Pobiera dane z Yahoo Finance"""
