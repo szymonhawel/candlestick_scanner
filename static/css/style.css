@@ -38,3 +38,29 @@ body {
 .badge {
     font-size: 0.85rem;
 }
+
+/* Lepsze stylowanie dla długich tabel */
+.table-responsive {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f8f9fa !important;
+}
+
+.table-sm td, .table-sm th {
+    padding: 0.5rem;
+}
+
+/* Hover dla sortowania */
+th[onclick] {
+    user-select: none;
+}
+
+th[onclick]:hover {
+    background-color: #e9ecef !important;
+}

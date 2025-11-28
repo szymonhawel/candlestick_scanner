@@ -248,37 +248,78 @@ class CandlestickModel:
         low_prices = self.data['low'].values
         close_prices = self.data['close'].values
         
-        # Lista wszystkich funkcji rozpoznawania formacji świecowych z TA-Lib
+        # KOMPLETNA LISTA WSZYSTKICH 61 FORMACJI Z TA-LIB
         pattern_functions = [
-            # Formacje jednoświecowe
+            # === Formacje jednoświecowe ===
             ('CDLDOJI', 'Doji'),
+            ('CDLDOJISTAR', 'Doji Star'),
+            ('CDLDRAGONFLYDOJI', 'Dragonfly Doji'),
+            ('CDLGRAVESTONEDOJI', 'Gravestone Doji'),
+            ('CDLLONGLEGGEDDOJI', 'Long Legged Doji'),
             ('CDLHAMMER', 'Hammer'),
             ('CDLINVERTEDHAMMER', 'Inverted Hammer'),
             ('CDLHANGINGMAN', 'Hanging Man'),
             ('CDLSHOOTINGSTAR', 'Shooting Star'),
-            ('CDLDRAGONFLYDOJI', 'Dragonfly Doji'),
-            ('CDLGRAVESTONEDOJI', 'Gravestone Doji'),
             ('CDLMARUBOZU', 'Marubozu'),
+            ('CDLCLOSINGMARUBOZU', 'Closing Marubozu'),
             ('CDLSPINNINGTOP', 'Spinning Top'),
+            ('CDLHIGHWAVE', 'High-Wave Candle'),
+            ('CDLRICKSHAWMAN', 'Rickshaw Man'),
+            ('CDLSHORTLINE', 'Short Line Candle'),
+            ('CDLLONGLINE', 'Long Line Candle'),
+            ('CDLBELTHOLD', 'Belt-hold'),
+            ('CDLTAKURI', 'Takuri'),
             
-            # Formacje dwuświecowe
+            # === Formacje dwuświecowe ===
             ('CDLENGULFING', 'Engulfing'),
             ('CDLHARAMI', 'Harami'),
             ('CDLHARAMICROSS', 'Harami Cross'),
             ('CDLPIERCING', 'Piercing'),
             ('CDLDARKCLOUDCOVER', 'Dark Cloud Cover'),
             ('CDLTWEEZERSBOTTOM', 'Tweezers Bottom'),
-            ('CDLTWEEZERSBOTTOM', 'Tweezers Top'),
+            ('CDLTWEEZERSTOP', 'Tweezers Top'),
+            ('CDLKICKING', 'Kicking'),
+            ('CDLKICKINGBYLENGTH', 'Kicking Bull/Bear'),
+            ('CDLMATCHINGLOW', 'Matching Low'),
+            ('CDLHOMINGPIGEON', 'Homing Pigeon'),
+            ('CDLINNECK', 'In-Neck'),
+            ('CDLONNECK', 'On-Neck'),
+            ('CDLTHRUSTING', 'Thrusting'),
+            ('CDLSEPARATINGLINES', 'Separating Lines'),
+            ('CDLCOUNTERATTACK', 'Counterattack'),
+            ('CDL2CROWS', 'Two Crows'),
+            ('CDLUPSIDEGAP2CROWS', 'Upside Gap Two Crows'),
+            ('CDLGAPSIDESIDEWHITE', 'Gap Side-by-Side White'),
             
-            # Formacje trzyświecowe
+            # === Formacje trzyświecowe ===
             ('CDLMORNINGSTAR', 'Morning Star'),
+            ('CDLMORNINGDOJISTAR', 'Morning Doji Star'),
             ('CDLEVENINGSTAR', 'Evening Star'),
+            ('CDLEVENINGDOJISTAR', 'Evening Doji Star'),
             ('CDL3WHITESOLDIERS', 'Three White Soldiers'),
             ('CDL3BLACKCROWS', 'Three Black Crows'),
             ('CDL3INSIDE', 'Three Inside Up/Down'),
             ('CDL3OUTSIDE', 'Three Outside Up/Down'),
             ('CDLABANDONEDBABY', 'Abandoned Baby'),
             ('CDLTRISTAR', 'Tristar'),
+            ('CDL3LINESTRIKE', 'Three Line Strike'),
+            ('CDL3STARSINSOUTH', 'Three Stars In The South'),
+            ('CDLIDENTICAL3CROWS', 'Identical Three Crows'),
+            ('CDLUNIQUE3RIVER', 'Unique 3 River'),
+            ('CDLXSIDEGAP3METHODS', 'Gap Three Methods'),
+            
+            # === Formacje wieloświecowe (4-5 świec) ===
+            ('CDLCONCEALBABYSWALL', 'Concealing Baby Swallow'),
+            ('CDLBREAKAWAY', 'Breakaway'),
+            ('CDLLADDERBOTTOM', 'Ladder Bottom'),
+            ('CDLADVANCEBLOCK', 'Advance Block'),
+            ('CDLSTALLEDPATTERN', 'Stalled Pattern'),
+            ('CDLMATHOLD', 'Mat Hold'),
+            ('CDLRISEFALL3METHODS', 'Rising/Falling Three Methods'),
+            ('CDLSTICKSANDWICH', 'Stick Sandwich'),
+            ('CDLHIKKAKE', 'Hikkake'),
+            ('CDLHIKKAKEMOD', 'Modified Hikkake'),
+            ('CDLTASUKIGAP', 'Tasuki Gap'),
         ]
         
         detected_patterns = {}
@@ -295,21 +336,39 @@ class CandlestickModel:
                 print(f"Błąd wykrywania {pattern_name}: {e}")
         
         self.patterns = detected_patterns
+        print(f"Wykryto {len(detected_patterns)} różnych typów formacji")
         return detected_patterns
     
     def interpret_patterns(self) -> List[Dict]:
         """Interpretuje wykryte formacje jako wzrostowe/spadkowe"""
         interpretations = []
         
-        # Słownik interpretacji formacji
+        # Rozszerzony słownik interpretacji formacji
         bullish_patterns = [
-            'Hammer', 'Inverted Hammer', 'Dragonfly Doji', 'Morning Star',
-            'Three White Soldiers', 'Piercing', 'Bullish Engulfing'
+            # Jednoświecowe wzrostowe
+            'Hammer', 'Inverted Hammer', 'Dragonfly Doji', 'Takuri', 'Belt-hold',
+            # Dwuświecowe wzrostowe
+            'Piercing', 'Tweezers Bottom', 'Homing Pigeon', 'Matching Low',
+            # Trzyświecowe wzrostowe
+            'Morning Star', 'Morning Doji Star', 'Three White Soldiers', 
+            'Three Inside Up/Down', 'Three Outside Up/Down',
+            # Wieloświecowe wzrostowe
+            'Abandoned Baby', 'Breakaway', 'Ladder Bottom', 'Concealing Baby Swallow',
+            'Three Stars In The South', 'Unique 3 River', 'Mat Hold',
+            'Rising/Falling Three Methods', 'Stick Sandwich'
         ]
         
         bearish_patterns = [
-            'Hanging Man', 'Shooting Star', 'Gravestone Doji', 'Evening Star',
-            'Three Black Crows', 'Dark Cloud Cover', 'Bearish Engulfing'
+            # Jednoświecowe spadkowe
+            'Hanging Man', 'Shooting Star', 'Gravestone Doji',
+            # Dwuświecowe spadkowe
+            'Dark Cloud Cover', 'Tweezers Top', 'Two Crows', 'Upside Gap Two Crows',
+            'Counterattack',
+            # Trzyświecowe spadkowe
+            'Evening Star', 'Evening Doji Star', 'Three Black Crows',
+            'Identical Three Crows', 'Tristar',
+            # Wieloświecowe spadkowe
+            'Advance Block', 'Stalled Pattern'
         ]
         
         for pattern_name, values in self.patterns.items():

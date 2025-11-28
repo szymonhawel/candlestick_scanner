@@ -18,7 +18,10 @@
         <div class="card mb-4">
             <div class="card-header">
                 <h5>Interaktywny wykres świecowy</h5>
-                <small class="text-muted">Najedź myszką na świeczki i markery aby zobaczyć szczegóły. Użyj scroll do zoomowania, przeciągnij aby przesunąć.</small>
+                <small class="text-muted">
+                    <strong>Instrukcje:</strong>
+                    Scroll - przybliż/oddal | Przeciągnij - przesuń | Najedź - szczegóły | Podwójne kliknięcie - reset
+                </small>
             </div>
             <div class="card-body p-0">
                 {{ interactive_chart|safe }}
@@ -36,89 +39,246 @@
             </div>
         </div>
         
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5>Wykryte formacje</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Formacja</th>
-                                <th>Trend</th>
-                                <th>Typ</th>
-                                <th>Sygnał</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in interpretations %}
-                            <tr>
-                                <td>{{ item.date }}</td>
-                                <td>{{ item.pattern }}</td>
-                                <td>
-                                    <span class="badge bg-{{ 'success' if item.trend == 'Wzrostowa' else 'danger' }}">
-                                        {{ item.trend }}
-                                    </span>
-                                </td>
-                                <td>{{ item.type }}</td>
-                                <td>{{ item.signal }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
+        <!-- NOWE: ZAKŁADKI DLA TABEL -->
         <div class="card">
             <div class="card-header">
-                <h5>Weryfikacja skuteczności</h5>
+                <ul class="nav nav-tabs card-header-tabs" id="resultsTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="patterns-tab" data-bs-toggle="tab" 
+                                data-bs-target="#patterns" type="button" role="tab">
+                            Wykryte formacje ({{ interpretations|length }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="effectiveness-tab" data-bs-toggle="tab" 
+                                data-bs-target="#effectiveness" type="button" role="tab">
+                            Weryfikacja skuteczności ({{ effectiveness|length }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="summary-tab" data-bs-toggle="tab" 
+                                data-bs-target="#summary" type="button" role="tab">
+                            Podsumowanie
+                        </button>
+                    </li>
+                </ul>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Formacja</th>
-                                <th>Oczekiwany kierunek</th>
-                                <th>Zmiana ceny (%)</th>
-                                <th>Skuteczna</th>
-                                <th>W strefie kluczowej</th>
-                                <th>Wiarygodność</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in effectiveness %}
-                            <tr>
-                                <td>{{ item.date }}</td>
-                                <td>{{ item.pattern }}</td>
-                                <td>
-                                    <span class="badge bg-{{ 'success' if item.expected == 'up' else 'danger' }}">
-                                        {{ '↑' if item.expected == 'up' else '↓' }}
-                                    </span>
-                                </td>
-                                <td>{{ item.actual_change }}%</td>
-                                <td>
-                                    <span class="badge bg-{{ 'success' if item.effective else 'warning' }}">
-                                        {{ '✓' if item.effective else '✗' }}
-                                    </span>
-                                </td>
-                                <td>{{ '✓' if item.near_key_level else '✗' }}</td>
-                                <td>
-                                    <span class="badge bg-{{ 'success' if item.reliability == 'Wysoka' else ('warning' if item.reliability == 'Średnia' else 'danger') }}">
-                                        {{ item.reliability }}
-                                    </span>
-                                </td>
-                            </tr>
+                <div class="tab-content" id="resultsTabContent">
+                    
+                    <!-- ZAKŁADKA 1: WYKRYTE FORMACJE -->
+                    <div class="tab-pane fade show active" id="patterns" role="tabpanel">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="patternSearch" 
+                                   placeholder="Szukaj formacji po nazwie, dacie lub trendzie...">
+                        </div>
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-striped table-hover table-sm" id="patternsTable">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th style="cursor: pointer;" onclick="sortTable(0)">Data ⬍</th>
+                                        <th style="cursor: pointer;" onclick="sortTable(1)">Formacja ⬍</th>
+                                        <th style="cursor: pointer;" onclick="sortTable(2)">Trend ⬍</th>
+                                        <th>Typ</th>
+                                        <th>Sygnał</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in interpretations %}
+                                    <tr>
+                                        <td>{{ item.date }}</td>
+                                        <td><strong>{{ item.pattern }}</strong></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if item.trend == 'Wzrostowa' else 'danger' }}">
+                                                {{ '↑' if item.trend == 'Wzrostowa' else '↓' }} {{ item.trend }}
+                                            </span>
+                                        </td>
+                                        <td><small>{{ item.type }}</small></td>
+                                        <td>{{ item.signal }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-muted mt-2">
+                            <small>Pokazano wszystkie {{ interpretations|length }} formacji. Użyj wyszukiwarki aby filtrować wyniki.</small>
+                        </div>
+                    </div>
+                    
+                    <!-- ZAKŁADKA 2: WERYFIKACJA SKUTECZNOŚCI -->
+                    <div class="tab-pane fade" id="effectiveness" role="tabpanel">
+                        <div class="mb-3">
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="effectiveFilter" id="filterAll" checked>
+                                <label class="btn btn-outline-secondary btn-sm" for="filterAll" onclick="filterEffectiveness('all')">Wszystkie</label>
+                                
+                                <input type="radio" class="btn-check" name="effectiveFilter" id="filterEffective">
+                                <label class="btn btn-outline-success btn-sm" for="filterEffective" onclick="filterEffectiveness(true)">✓ Skuteczne</label>
+                                
+                                <input type="radio" class="btn-check" name="effectiveFilter" id="filterIneffective">
+                                <label class="btn btn-outline-danger btn-sm" for="filterIneffective" onclick="filterEffectiveness(false)">✗ Nieskuteczne</label>
+                            </div>
+                        </div>
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-striped table-hover table-sm" id="effectivenessTable">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Formacja</th>
+                                        <th>Oczekiwany</th>
+                                        <th>Zmiana (%)</th>
+                                        <th>Skuteczna</th>
+                                        <th>W strefie</th>
+                                        <th>Wiarygodność</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in effectiveness %}
+                                    <tr data-effective="{{ item.effective }}">
+                                        <td>{{ item.date }}</td>
+                                        <td><small>{{ item.pattern }}</small></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if item.expected == 'up' else 'danger' }}">
+                                                {{ '↑' if item.expected == 'up' else '↓' }}
+                                            </span>
+                                        </td>
+                                        <td class="{{ 'text-success' if item.actual_change > 0 else 'text-danger' }}">
+                                            <strong>{{ item.actual_change }}%</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if item.effective else 'warning' }}">
+                                                {{ '✓' if item.effective else '✗' }}
+                                            </span>
+                                        </td>
+                                        <td>{{ '✓' if item.near_key_level else '✗' }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if item.reliability == 'Wysoka' else ('warning' if item.reliability == 'Średnia' else 'danger') }}">
+                                                {{ item.reliability }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- ZAKŁADKA 3: PODSUMOWANIE -->
+                    <div class="tab-pane fade" id="summary" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Statystyki formacji</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Formacje wzrostowe:</td>
+                                        <td><strong class="text-success">{{ interpretations|selectattr('trend', 'equalto', 'Wzrostowa')|list|length }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Formacje spadkowe:</td>
+                                        <td><strong class="text-danger">{{ interpretations|selectattr('trend', 'equalto', 'Spadkowa')|list|length }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Łączna liczba:</td>
+                                        <td><strong>{{ interpretations|length }}</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Skuteczność</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Skuteczne formacje:</td>
+                                        <td><strong class="text-success">{{ effectiveness|selectattr('effective', 'equalto', true)|list|length }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Nieskuteczne:</td>
+                                        <td><strong class="text-danger">{{ effectiveness|selectattr('effective', 'equalto', false)|list|length }}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Procent skuteczności:</td>
+                                        <td><strong>
+                                            {% if effectiveness|length > 0 %}
+                                                {{ ((effectiveness|selectattr('effective', 'equalto', true)|list|length / effectiveness|length) * 100)|round(1) }}%
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h5>Top 5 najczęstszych formacji</h5>
+                        <ul class="list-group">
+                            {% set pattern_counts = {} %}
+                            {% for item in interpretations %}
+                                {% if pattern_counts.update({item.pattern: pattern_counts.get(item.pattern, 0) + 1}) %}{% endif %}
                             {% endfor %}
-                        </tbody>
-                    </table>
+                            {% for pattern, count in (pattern_counts.items()|sort(attribute='1', reverse=True))[:5] %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ pattern }}
+                                <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- JAVASCRIPT DLA INTERAKTYWNOŚCI -->
+<script>
+// Wyszukiwanie w tabeli formacji
+document.getElementById('patternSearch')?.addEventListener('keyup', function() {
+    const searchValue = this.value.toLowerCase();
+    const table = document.getElementById('patternsTable');
+    const rows = table.getElementsByTagName('tr');
+    
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchValue) ? '' : 'none';
+    }
+});
+
+// Filtrowanie skuteczności
+function filterEffectiveness(filter) {
+    const table = document.getElementById('effectivenessTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    for (let row of rows) {
+        if (filter === 'all') {
+            row.style.display = '';
+        } else {
+            const isEffective = row.getAttribute('data-effective') === 'True';
+            row.style.display = (isEffective === filter) ? '' : 'none';
+        }
+    }
+}
+
+// Sortowanie tabeli
+let sortOrder = {};
+function sortTable(columnIndex) {
+    const table = document.getElementById('patternsTable');
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = Array.from(tbody.getElementsByTagName('tr'));
+    
+    sortOrder[columnIndex] = !sortOrder[columnIndex];
+    const ascending = sortOrder[columnIndex];
+    
+    rows.sort((a, b) => {
+        const aVal = a.getElementsByTagName('td')[columnIndex].textContent;
+        const bVal = b.getElementsByTagName('td')[columnIndex].textContent;
+        return ascending ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
+</script>
+
 {% endblock %}
