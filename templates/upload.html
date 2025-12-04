@@ -3,35 +3,42 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-10 mx-auto">
+    <div class="col-md-6 mx-auto">
         <h2 class="mb-4">Wczytaj dane giełdowe</h2>
         
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5>Upload pliku CSV</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Format pliku: CSV z kolumnami Date, Open, High, Low, Close</p>
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" id="uploadTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="csv-tab" data-bs-toggle="tab" data-bs-target="#csv-panel" type="button" role="tab" aria-controls="csv-panel" aria-selected="true">
+                            Upload pliku CSV
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="yahoo-tab" data-bs-toggle="tab" data-bs-target="#yahoo-panel" type="button" role="tab" aria-controls="yahoo-panel" aria-selected="false">
+                            Pobierz z Yahoo Finance
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="uploadTabsContent">
+                    <!-- CSV Upload Tab -->
+                    <div class="tab-pane fade show active" id="csv-panel" role="tabpanel" aria-labelledby="csv-tab">
+                        <p class="text-muted">Format pliku: CSV z kolumnami Date, Open, High, Low, Close</p>
                         <form id="uploadForm" enctype="multipart/form-data">
                             <div class="mb-3">
+                                <label for="fileInput" class="form-label">Wybierz plik CSV</label>
                                 <input type="file" class="form-control" id="fileInput" name="file" accept=".csv,.txt">
                             </div>
                             <button type="submit" class="btn btn-primary">Wczytaj plik</button>
                         </form>
                         <div id="uploadMessage" class="mt-3"></div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-success text-white">
-                        <h5>Pobierz z Yahoo Finance</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Wprowadź symbol ticker (np. AAPL, MSFT, ^DJI)</p>
+                    
+                    <!-- Yahoo Finance Tab -->
+                    <div class="tab-pane fade" id="yahoo-panel" role="tabpanel" aria-labelledby="yahoo-tab">
+                        <p class="text-muted">Wprowadź symbol ticker (np. AAPL, MSFT, ^DJI)</p>
                         <form id="tickerForm">
                             <div class="mb-3">
                                 <label for="tickerInput" class="form-label">Symbol ticker</label>
