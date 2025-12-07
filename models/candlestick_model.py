@@ -201,7 +201,7 @@ class CandlestickModel:
                 ticker, 
                 period=period, 
                 progress=False, 
-                auto_adjust=True  # Unikaj ostrzeżenia FutureWarning
+                auto_adjust=False  # Unikaj ostrzeżenia FutureWarning
             )
             
             # Sprawdź czy dane zostały pobrane
