@@ -193,15 +193,21 @@ class CandlestickModel:
             return False
 
     
-    def load_data_from_ticker(self, ticker: str, period: str = '1y') -> bool:
-        """Pobiera dane z Yahoo Finance"""
+    def load_data_from_ticker(self, ticker: str, period: str = '1y', use_adjusted: bool = False) -> bool:
+        """Pobiera dane z Yahoo Finance
+        
+        Args:
+            ticker: Symbol tickera (np. AAPL)
+            period: Okres danych (1mo, 3mo, 6mo, 1y, 2y, 5y)
+            use_adjusted: True = ceny skorygowane o dywidendy, False = ceny surowe (domyślne)
+        """
         try:
-            # Pobierz dane z auto_adjust=True (domyślne od wersji 0.2.45+)
+            # Pobierz dane z wybranym trybem korekty
             self.data = yf.download(
                 ticker, 
                 period=period, 
                 progress=False, 
-                auto_adjust=False  # Unikaj ostrzeżenia FutureWarning
+                auto_adjust=use_adjusted  # ZMIANA: parametr od użytkownika
             )
             
             # Sprawdź czy dane zostały pobrane
@@ -226,9 +232,10 @@ class CandlestickModel:
                 print(f"Brak wymaganych kolumn. Dostępne: {list(self.data.columns)}")
                 return False
             
-            print(f"✓ Pobrano {len(self.data)} wierszy danych dla {ticker}")
+            adjustment_type = "skorygowane o dywidendy" if use_adjusted else "surowe (rzeczywiste)"
+            print(f"✓ Pobrano {len(self.data)} wierszy danych dla {ticker} (ceny {adjustment_type})")
 
-            self.source_filename = f"{ticker}_{period}"
+            self.source_filename = f"{ticker}_{period}_{'adj' if use_adjusted else 'raw'}"
             
             return True
             
@@ -237,6 +244,7 @@ class CandlestickModel:
             import traceback
             traceback.print_exc()
             return False
+
     
     def detect_patterns(self) -> Dict[str, pd.Series]:
         """Wykrywa formacje świecowe przy użyciu TA-Lib"""

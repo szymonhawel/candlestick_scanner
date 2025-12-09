@@ -51,12 +51,18 @@ class ScannerController:
         data = request.get_json()
         ticker = data.get('ticker', '').upper()
         period = data.get('period', '1y')
+        use_adjusted = data.get('use_adjusted', False)  # NOWE: odczyt parametru
         
         if not ticker:
             return jsonify({'error': 'Brak symbolu ticker'}), 400
         
-        if self.model.load_data_from_ticker(ticker, period):
-            return jsonify({'success': True, 'message': f'Dane dla {ticker} wczytane pomyślnie'}), 200
+        # ZMIANA: przekaż use_adjusted do modelu
+        if self.model.load_data_from_ticker(ticker, period, use_adjusted):
+            adjustment_msg = " (ceny skorygowane o dywidendy)" if use_adjusted else " (ceny surowe)"
+            return jsonify({
+                'success': True, 
+                'message': f'Dane dla {ticker} wczytane pomyślnie{adjustment_msg}'
+            }), 200
         else:
             return jsonify({'error': 'Błąd pobierania danych'}), 400
     

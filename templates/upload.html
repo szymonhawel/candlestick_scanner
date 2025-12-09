@@ -55,6 +55,55 @@
                                     <option value="5y">5 lat</option>
                                 </select>
                             </div>
+                            
+                            <div class="mb-3">
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#advancedOptions" aria-expanded="false" aria-controls="advancedOptions">
+                                        <i class="bi bi-gear-fill"></i> Zaawansowane opcje
+                                        <i class="bi bi-chevron-down float-end"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="collapse mt-2" id="advancedOptions">
+                                    <div class="card card-body bg-light">
+                                        <h6 class="card-subtitle mb-3 text-muted">
+                                            <i class="bi bi-sliders"></i> Konfiguracja pobierania danych
+                                        </h6>
+                                        
+                                        <!-- Opcja: Skorygowane ceny -->
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="useAdjustedCheckbox">
+                                                <label class="form-check-label" for="useAdjustedCheckbox">
+                                                    <strong>Ceny skorygowane o dywidendy</strong>
+                                                </label>
+                                            </div>
+                                            <small class="text-muted d-block mt-1 ms-4">
+                                                <i class="bi bi-info-circle"></i> 
+                                                <strong>Wyłączone (domyślne):</strong> Rzeczywiste ceny transakcyjne<br>
+                                                <span class="ms-4">Wykresy identyczne jak na stronach giełdowych</span><br>
+                                                <strong>Włączone:</strong> Ceny skorygowane o wypłacone dywidendy<br>
+                                                <span class="ms-4">Zalecane do analizy stóp zwrotu w czasie</span>
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Miejsce na przyszłe opcje -->
+                                        <!-- 
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="futureOption1">
+                                                <label class="form-check-label" for="futureOption1">
+                                                    <strong>Przyszła opcja 1</strong>
+                                                </label>
+                                            </div>
+                                            <small class="text-muted d-block mt-1 ms-4">Opis opcji</small>
+                                        </div>
+                                        -->
+                                        
+                                    </div>
+                                </div>
+                            </div>
                             <button type="submit" class="btn btn-success">Pobierz dane</button>
                         </form>
                         <div id="tickerMessage" class="mt-3"></div>
@@ -102,12 +151,17 @@ document.getElementById('tickerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const ticker = document.getElementById('tickerInput').value;
     const period = document.getElementById('periodSelect').value;
+    const useAdjusted = document.getElementById('useAdjustedCheckbox').checked;
     
     try {
         const response = await fetch('/api/load-ticker', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ticker, period})
+            body: JSON.stringify({
+                ticker, 
+                period,
+                use_adjusted: useAdjusted
+            })
         });
         const data = await response.json();
         
