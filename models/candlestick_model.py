@@ -351,32 +351,110 @@ class CandlestickModel:
         """Interpretuje wykryte formacje jako wzrostowe/spadkowe"""
         interpretations = []
         
-        # Rozszerzony słownik interpretacji formacji
+        # === FORMACJE WZROSTOWE (BULLISH) ===
         bullish_patterns = [
             # Jednoświecowe wzrostowe
-            'Hammer', 'Inverted Hammer', 'Dragonfly Doji', 'Takuri', 'Belt-hold',
+            'Hammer', 
+            'Inverted Hammer', 
+            'Dragonfly Doji', 
+            'Takuri', 
+            'Belt-hold',
+            
             # Dwuświecowe wzrostowe
-            'Piercing', 'Tweezers Bottom', 'Homing Pigeon', 'Matching Low',
+            'Piercing', 
+            'Tweezers Bottom', 
+            'Homing Pigeon', 
+            'Matching Low',
+            'Engulfing',  # ← DODANE (może być bullish gdy signal > 0)
+            'Harami',  # ← DODANE (może być bullish gdy signal > 0)
+            'Harami Cross',  # ← DODANE (może być bullish gdy signal > 0)
+            'Kicking',  # ← DODANE (może być bullish gdy signal > 0)
+            'Kicking Bull/Bear',  # ← DODANE (może być bullish gdy signal > 0)
+            'Separating Lines',  # ← DODANE (może być bullish gdy signal > 0)
+            'Gap Side-by-Side White',  # ← DODANE (zwykle bullish)
+            
             # Trzyświecowe wzrostowe
-            'Morning Star', 'Morning Doji Star', 'Three White Soldiers', 
-            'Three Inside Up/Down', 'Three Outside Up/Down',
+            'Morning Star', 
+            'Morning Doji Star', 
+            'Three White Soldiers', 
+            'Three Inside Up/Down',  # może być bullish
+            'Three Outside Up/Down',  # może być bullish
+            'Three Line Strike',  # ← DODANE (może być bullish gdy signal > 0)
+            'Three Stars In The South',
+            'Unique 3 River',
+            'Tristar',  # ← PRZENIESIONE z bearish (może być bullish gdy signal > 0)
+            'Gap Three Methods',  # ← DODANE (może być bullish gdy signal > 0)
+            
             # Wieloświecowe wzrostowe
-            'Abandoned Baby', 'Breakaway', 'Ladder Bottom', 'Concealing Baby Swallow',
-            'Three Stars In The South', 'Unique 3 River', 'Mat Hold',
-            'Rising/Falling Three Methods', 'Stick Sandwich'
+            'Abandoned Baby',  # może być bullish
+            'Breakaway',  # może być bullish
+            'Ladder Bottom', 
+            'Concealing Baby Swallow',
+            'Mat Hold',
+            'Rising/Falling Three Methods',  # może być bullish
+            'Stick Sandwich',
+            'Hikkake',  # ← DODANE (może być bullish gdy signal > 0)
+            'Modified Hikkake',  # ← DODANE (może być bullish gdy signal > 0)
+            'Tasuki Gap',  # ← DODANE (może być bullish gdy signal > 0)
         ]
         
+        # === FORMACJE SPADKOWE (BEARISH) ===
         bearish_patterns = [
             # Jednoświecowe spadkowe
-            'Hanging Man', 'Shooting Star', 'Gravestone Doji',
+            'Hanging Man', 
+            'Shooting Star', 
+            'Gravestone Doji',
+            
             # Dwuświecowe spadkowe
-            'Dark Cloud Cover', 'Tweezers Top', 'Two Crows', 'Upside Gap Two Crows',
+            'Dark Cloud Cover', 
+            'Tweezers Top', 
+            'Two Crows', 
+            'Upside Gap Two Crows',
             'Counterattack',
+            'Engulfing',  # ← DODANE (może być bearish gdy signal < 0)
+            'Harami',  # ← DODANE (może być bearish gdy signal < 0)
+            'Harami Cross',  # ← DODANE (może być bearish gdy signal < 0)
+            'In-Neck',  # ← DODANE (bearish continuation)
+            'On-Neck',  # ← DODANE (bearish continuation)
+            'Thrusting',  # ← DODANE (bearish continuation)
+            'Kicking',  # ← DODANE (może być bearish gdy signal < 0)
+            'Kicking Bull/Bear',  # ← DODANE (może być bearish gdy signal < 0)
+            'Separating Lines',  # ← DODANE (może być bearish gdy signal < 0)
+            
             # Trzyświecowe spadkowe
-            'Evening Star', 'Evening Doji Star', 'Three Black Crows',
-            'Identical Three Crows', 'Tristar',
+            'Evening Star', 
+            'Evening Doji Star', 
+            'Three Black Crows',
+            'Identical Three Crows',
+            'Three Inside Up/Down',  # ← DODANE (może być bearish gdy signal < 0)
+            'Three Outside Up/Down',  # ← DODANE (może być bearish gdy signal < 0)
+            'Three Line Strike',  # ← DODANE (może być bearish gdy signal < 0)
+            'Tristar',  # ← DODANE (może być bearish gdy signal < 0)
+            'Gap Three Methods',  # ← DODANE (może być bearish gdy signal < 0)
+            
             # Wieloświecowe spadkowe
-            'Advance Block', 'Stalled Pattern'
+            'Advance Block', 
+            'Stalled Pattern',
+            'Abandoned Baby',  # ← DODANE (może być bearish gdy signal < 0)
+            'Breakaway',  # ← DODANE (może być bearish gdy signal < 0)
+            'Rising/Falling Three Methods',  # ← DODANE (może być bearish gdy signal < 0)
+            'Hikkake',  # ← DODANE (może być bearish gdy signal < 0)
+            'Modified Hikkake',  # ← DODANE (może być bearish gdy signal < 0)
+            'Tasuki Gap',  # ← DODANE (może być bearish gdy signal < 0)
+        ]
+        
+        # === FORMACJE NEUTRALNE (wykrywane ale bez jednoznacznej interpretacji) ===
+        neutral_patterns = [
+            'Doji',  # ← DODANE (niezdecydowanie rynku)
+            'Doji Star',  # ← DODANE (niezdecydowanie)
+            'Long Legged Doji',  # ← DODANE (niezdecydowanie)
+            'Rickshaw Man',  # ← DODANE (niezdecydowanie)
+            'High-Wave Candle',  # ← DODANE (niezdecydowanie)
+            'Spinning Top',  # ← DODANE (słaba presja w obu kierunkach)
+            'Short Line Candle',  # ← DODANE (mała zmienność)
+            'Long Line Candle',  # ← DODANE (silny ruch - kierunek zależy od signal)
+            'Marubozu',  # ← DODANE (silny ruch - kierunek zależy od signal)
+            'Closing Marubozu',  # ← DODANE (silny ruch - kierunek zależy od signal)
         ]
         
         for pattern_name, values in self.patterns.items():
@@ -385,13 +463,30 @@ class CandlestickModel:
             for idx in indices:
                 signal_value = values[idx]
                 
-                # Określ typ sygnału
-                if signal_value > 0:
+                # Określ siłę sygnału
+                signal_strength = 'Potwierdzona' if abs(signal_value) >= 200 else 'Wykryta'
+                confidence = 'Wysoka' if abs(signal_value) >= 200 else 'Średnia'
+                
+                # Określ typ sygnału na podstawie wartości i nazwy formacji
+                if pattern_name in neutral_patterns:
+                    if signal_value > 0:
+                        trend = 'Neutralna (lekka presja wzrostowa)'
+                        pattern_type = 'Niezdecydowanie'
+                    else:
+                        trend = 'Neutralna (lekka presja spadkowa)'
+                        pattern_type = 'Niezdecydowanie'
+                elif signal_value > 0:
                     trend = 'Wzrostowa'
-                    pattern_type = 'Odwrócenie wzrostowe' if any(p in pattern_name for p in bullish_patterns) else 'Kontynuacja wzrostowa'
+                    if any(p in pattern_name for p in bullish_patterns):
+                        pattern_type = 'Odwrócenie wzrostowe'
+                    else:
+                        pattern_type = 'Kontynuacja wzrostowa'
                 else:
                     trend = 'Spadkowa'
-                    pattern_type = 'Odwrócenie spadkowe' if any(p in pattern_name for p in bearish_patterns) else 'Kontynuacja spadkowa'
+                    if any(p in pattern_name for p in bearish_patterns):
+                        pattern_type = 'Odwrócenie spadkowe'
+                    else:
+                        pattern_type = 'Kontynuacja spadkowa'
                 
                 interpretations.append({
                     'index': int(idx),
@@ -399,11 +494,13 @@ class CandlestickModel:
                     'pattern': pattern_name,
                     'trend': trend,
                     'type': pattern_type,
-                    'signal': int(signal_value)
+                    'signal': int(signal_value),
+                    'strength': signal_strength,
+                    'confidence': confidence
                 })
         
         return sorted(interpretations, key=lambda x: x['index'])
-    
+
     def calculate_support_resistance(self, window: int = 20) -> List[Tuple[float, str]]:
         """Oblicza poziomy wsparcia i oporu"""
         if self.data is None:

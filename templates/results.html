@@ -84,20 +84,32 @@
                                         <th style="cursor: pointer;" onclick="sortTable(2)">Trend ⬍</th>
                                         <th>Typ</th>
                                         <th>Sygnał</th>
+                                        <th>Siła sygnału</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for item in interpretations %}
                                     <tr>
                                         <td>{{ item.date }}</td>
-                                        <td><strong>{{ item.pattern }}</strong></td>
+                                        <td>{{ item.pattern }}</td>
                                         <td>
-                                            <span class="badge bg-{{ 'success' if item.trend == 'Wzrostowa' else 'danger' }}">
-                                                {{ '↑' if item.trend == 'Wzrostowa' else '↓' }} {{ item.trend }}
+                                            <span class="badge bg-{{ 'success' if item.signal > 0 else 'danger' }}">
+                                                {{ item.trend }}
                                             </span>
                                         </td>
-                                        <td><small>{{ item.type }}</small></td>
-                                        <td>{{ item.signal }}</td>
+                                        <td>{{ item.type }}</td>
+                                        <td>
+                                            {% if item.signal > 0 %}
+                                                <span class="badge bg-success">+{{ item.signal }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ item.signal }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if item.strength == 'Potwierdzona' else 'secondary' }}">
+                                                {{ item.strength }}
+                                            </span>
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
