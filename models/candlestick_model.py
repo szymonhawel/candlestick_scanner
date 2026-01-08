@@ -193,13 +193,12 @@ class CandlestickModel:
             return False
 
     
-    def load_data_from_ticker(self, ticker: str, period: str = '1y', use_adjusted: bool = False) -> bool:
+    def load_data_from_ticker(self, ticker: str, period: str = '1y') -> bool:
         """Pobiera dane z Yahoo Finance
         
         Args:
             ticker: Symbol tickera (np. AAPL)
             period: Okres danych (1mo, 3mo, 6mo, 1y, 2y, 5y)
-            use_adjusted: True = ceny skorygowane o dywidendy, False = ceny surowe (domyślne)
         """
         try:
             # Pobierz dane z wybranym trybem korekty
@@ -207,7 +206,7 @@ class CandlestickModel:
                 ticker, 
                 period=period, 
                 progress=False, 
-                auto_adjust=use_adjusted  # ZMIANA: parametr od użytkownika
+                auto_adjust=False  # ZMIANA: parametr od użytkownika
             )
             
             # Sprawdź czy dane zostały pobrane
@@ -232,10 +231,9 @@ class CandlestickModel:
                 print(f"Brak wymaganych kolumn. Dostępne: {list(self.data.columns)}")
                 return False
             
-            adjustment_type = "skorygowane o dywidendy" if use_adjusted else "surowe (rzeczywiste)"
-            print(f"✓ Pobrano {len(self.data)} wierszy danych dla {ticker} (ceny {adjustment_type})")
+            print(f"✓ Pobrano {len(self.data)} wierszy danych dla {ticker}")
 
-            self.source_filename = f"{ticker}_{period}_{'adj' if use_adjusted else 'raw'}"
+            self.source_filename = f"{ticker}_{period}"
             
             return True
             
