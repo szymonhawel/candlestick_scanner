@@ -733,12 +733,12 @@ class CandlestickModel:
             
             # Konfiguracja stylu
             mc = mpf.make_marketcolors(
-                up='#26a69a',
-                down='#ef5350',
-                edge='inherit',
-                wick='inherit',
+                up='white',
+                down='black',
+                edge='black',
+                wick='black',
                 volume='in',
-                alpha=0.9
+                alpha=1.0
             )
             
             style = mpf.make_mpf_style(
@@ -930,7 +930,7 @@ class CandlestickModel:
             else:
                 fig = go.Figure()
             
-            # Dodaj świeczki
+           # Dodaj świeczki - KLASYCZNE KOLORY
             candlestick = go.Candlestick(
                 x=plot_data.index,
                 open=plot_data['open'],
@@ -938,8 +938,11 @@ class CandlestickModel:
                 low=plot_data['low'],
                 close=plot_data['close'],
                 name='Cena',
-                increasing_line_color='#26a69a',
-                decreasing_line_color='#ef5350',
+                increasing_line_color='black',
+                increasing_fillcolor='white',
+                decreasing_line_color='black',
+                decreasing_fillcolor='black',
+                line=dict(width=1),
                 hovertext=[
                     f"Data: {date.strftime('%Y-%m-%d')}<br>"
                     f"Open: {o:.2f}<br>"
@@ -1110,7 +1113,7 @@ class CandlestickModel:
             
             # Dodaj wolumen jeśli dostępny
             if show_volume:
-                colors = ['green' if close >= open_val else 'red' 
+                colors = ['lightgray' if close >= open_val else 'black' 
                         for close, open_val in zip(plot_data['close'], plot_data['open'])]
                 
                 volume_bar = go.Bar(
@@ -1118,7 +1121,7 @@ class CandlestickModel:
                     y=plot_data['volume'],
                     name='Wolumen',
                     marker_color=colors,
-                    opacity=0.5,
+                    opacity=1.0,
                     hovertemplate='%{x}<br>Wolumen: %{y:,.0f}<extra></extra>'
                 )
                 
