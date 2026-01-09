@@ -282,8 +282,6 @@ class CandlestickModel:
             ('CDLHARAMICROSS', 'Harami Cross'),
             ('CDLPIERCING', 'Piercing'),
             ('CDLDARKCLOUDCOVER', 'Dark Cloud Cover'),
-            ('CDLTWEEZERSBOTTOM', 'Tweezers Bottom'),
-            ('CDLTWEEZERSTOP', 'Tweezers Top'),
             ('CDLKICKING', 'Kicking'),
             ('CDLKICKINGBYLENGTH', 'Kicking Bull/Bear'),
             ('CDLMATCHINGLOW', 'Matching Low'),
@@ -359,8 +357,7 @@ class CandlestickModel:
             'Belt-hold',
             
             # Dwuświecowe wzrostowe
-            'Piercing', 
-            'Tweezers Bottom', 
+            'Piercing',
             'Homing Pigeon', 
             'Matching Low',
             'Engulfing',  # ← DODANE (może być bullish gdy signal > 0)
@@ -404,8 +401,7 @@ class CandlestickModel:
             'Gravestone Doji',
             
             # Dwuświecowe spadkowe
-            'Dark Cloud Cover', 
-            'Tweezers Top', 
+            'Dark Cloud Cover',
             'Two Crows', 
             'Upside Gap Two Crows',
             'Counterattack',
