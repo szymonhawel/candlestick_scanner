@@ -517,7 +517,7 @@ class CandlestickModel:
         self.support_resistance_levels = levels
         return levels
     
-    def verify_pattern_effectiveness(self, lookback: int = 5) -> List[Dict]:
+    # def verify_pattern_effectiveness(self, lookback: int = 5) -> List[Dict]:
         """Weryfikuje skuteczność formacji"""
         if self.data is None or not self.patterns:
             return []
@@ -548,6 +548,94 @@ class CandlestickModel:
             expected_direction = 'up' if interp['signal'] > 0 else 'down'
             actual_direction = 'up' if price_change > 0 else 'down'
             
+            effective = (expected_direction == actual_direction)
+            
+            effectiveness.append({
+                'pattern': interp['pattern'],
+                'date': interp['date'],
+                'expected': expected_direction,
+                'actual_change': round(price_change, 2),
+                'effective': effective,
+                'near_key_level': near_support_resistance,
+                'reliability': 'Wysoka' if (effective and near_support_resistance) else 'Średnia' if effective else 'Niska'
+            })
+        
+        return effectiveness
+    
+    def verify_pattern_effectiveness(self, lookback_max: int = 10) -> List[Dict]:
+        """Weryfikuje skuteczność formacji z hybrydowym podejściem
+        
+        Args:
+            lookback_max: Maksymalna liczba świec do przodu dla weryfikacji (domyślnie 15)
+        """
+        if self.data is None or not self.patterns:
+            return []
+        
+        effectiveness = []
+        interpretations = self.interpret_patterns()
+        
+        for interp in interpretations:
+            idx = interp['index']
+            
+            if idx + lookback_max >= len(self.data):
+                continue
+            
+            current_close = self.data['close'].iloc[idx]
+            
+            # HYBRYDOWE PODEJŚCIE: Sprawdź zarówno końcową cenę jak i ekstremum
+            future_prices = self.data['close'].iloc[idx+1:idx+lookback_max+1]
+            final_close = future_prices.iloc[-1]  # Cena na końcu okresu
+            
+            max_price = future_prices.max()
+            min_price = future_prices.min()
+            
+            # Oblicz zmiany
+            final_change_pct = ((final_close - current_close) / current_close) * 100
+            max_gain_pct = ((max_price - current_close) / current_close) * 100
+            max_loss_pct = ((min_price - current_close) / current_close) * 100
+            
+            # Określ dominujący ruch - KOMBINACJA końcowej ceny i ekstremum
+            if abs(max_loss_pct) > abs(max_gain_pct):
+                # Jeśli był silny spadek
+                if final_change_pct < 0:
+                    # I cena końcowa też spadła - potwierdza spadek
+                    actual_direction = 'down'
+                    price_change = final_change_pct
+                else:
+                    # Ale cena odbiła - sprawdź proporcje
+                    if abs(max_loss_pct) > abs(final_change_pct) * 2:
+                        # Jeśli spadek był 2x większy niż odbicie - uznaj za spadkowy
+                        actual_direction = 'down'
+                        price_change = max_loss_pct
+                    else:
+                        # Odbicie było silne - uznaj za wzrostowy
+                        actual_direction = 'up'
+                        price_change = final_change_pct
+            else:
+                # Jeśli był silny wzrost
+                if final_change_pct > 0:
+                    # I cena końcowa też wzrosła - potwierdza wzrost
+                    actual_direction = 'up'
+                    price_change = final_change_pct
+                else:
+                    # Ale cena spadła - sprawdź proporcje
+                    if abs(max_gain_pct) > abs(final_change_pct) * 2:
+                        # Jeśli wzrost był 2x większy niż spadek - uznaj za wzrostowy
+                        actual_direction = 'up'
+                        price_change = max_gain_pct
+                    else:
+                        # Spadek był silny - uznaj za spadkowy
+                        actual_direction = 'down'
+                        price_change = final_change_pct
+            
+            # Sprawdź czy formacja jest w pobliżu wsparcia/oporu
+            near_support_resistance = False
+            for level, level_type in self.support_resistance_levels:
+                if abs(current_close - level) / current_close < 0.02:
+                    near_support_resistance = True
+                    break
+            
+            expected_direction = 'up' if interp['signal'] > 0 else 'down'
             effective = (expected_direction == actual_direction)
             
             effectiveness.append({
@@ -1180,8 +1268,72 @@ class CandlestickModel:
             return ""
 
 
+    # def export_results(self, filepath: str) -> str:
+    #     """Eksportuje wyniki do pliku CSV (najprostsza wersja)"""
+    #     try:
+    #         import os
+        
+    #         # Upewnij się, że folder istnieje
+    #         directory = os.path.dirname(filepath)
+    #         if directory and not os.path.exists(directory):
+    #             os.makedirs(directory, exist_ok=True)
+    #             print(f"✓ Utworzono folder: {directory}")
+            
+    #         # ← DODAJ TEN BLOK - Zmodyfikuj nazwę pliku
+    #         if self.source_filename:
+    #             # Wyodrębnij folder i rozszerzenie
+    #             base_name = os.path.basename(filepath)
+    #             dir_name = os.path.dirname(filepath)
+                
+    #             # Usuń "wyniki_analizy" jeśli istnieje
+    #             if base_name.startswith('wyniki_analizy'):
+    #                 # Utwórz nową nazwę z nazwą źródła
+    #                 new_name = f"wyniki_analizy_{self.source_filename}.csv"
+    #             else:
+    #                 # Jeśli inna nazwa, po prostu dodaj źródło
+    #                 name_without_ext = os.path.splitext(base_name)[0]
+    #                 new_name = f"{name_without_ext}_{self.source_filename}.csv"
+                
+    #             filepath = os.path.join(dir_name, new_name)
+    #             print(f"✓ Zmieniono nazwę pliku na: {new_name}")
+            
+    #         # Przygotuj dane
+    #         interpretations = self.interpret_patterns()
+            
+    #         if not interpretations:
+    #             print("⚠ Brak wykrytych formacji do eksportu")
+    #             return None
+            
+    #         print(f"Eksportuję {len(interpretations)} formacji...")
+            
+    #         # Zawsze zapisuj jako CSV (prostsze i zawsze działa)
+    #         csv_path = filepath.replace('.xlsx', '.csv')
+            
+    #         # Utwórz DataFrame
+    #         df = pd.DataFrame(interpretations)
+            
+    #         # Zapisz do CSV z odpowiednim kodowaniem
+    #         df.to_csv(csv_path, index=False, encoding='utf-8-sig', sep=';')
+            
+    #         # Sprawdź czy plik został utworzony
+    #         if os.path.exists(csv_path):
+    #             file_size = os.path.getsize(csv_path)
+    #             print(f"✓ Plik CSV utworzony: {csv_path}")
+    #             print(f"  Rozmiar: {file_size} bajtów")
+    #             print(f"  Wierszy: {len(df)}")
+    #             return csv_path
+    #         else:
+    #             print(f"❌ Plik nie istnieje: {csv_path}")
+    #             return None
+                
+    #     except Exception as e:
+    #         print(f"❌ Błąd eksportu: {e}")
+    #         import traceback
+    #         traceback.print_exc()
+    #         return None
+        
     def export_results(self, filepath: str) -> str:
-        """Eksportuje wyniki do pliku CSV (najprostsza wersja)"""
+        """Eksportuje wyniki do pliku CSV z pełną analizą skuteczności"""
         try:
             import os
         
@@ -1191,38 +1343,72 @@ class CandlestickModel:
                 os.makedirs(directory, exist_ok=True)
                 print(f"✓ Utworzono folder: {directory}")
             
-            # ← DODAJ TEN BLOK - Zmodyfikuj nazwę pliku
+            # Zmodyfikuj nazwę pliku z nazwą źródła danych
             if self.source_filename:
-                # Wyodrębnij folder i rozszerzenie
                 base_name = os.path.basename(filepath)
                 dir_name = os.path.dirname(filepath)
                 
-                # Usuń "wyniki_analizy" jeśli istnieje
                 if base_name.startswith('wyniki_analizy'):
-                    # Utwórz nową nazwę z nazwą źródła
                     new_name = f"wyniki_analizy_{self.source_filename}.csv"
                 else:
-                    # Jeśli inna nazwa, po prostu dodaj źródło
                     name_without_ext = os.path.splitext(base_name)[0]
                     new_name = f"{name_without_ext}_{self.source_filename}.csv"
                 
                 filepath = os.path.join(dir_name, new_name)
                 print(f"✓ Zmieniono nazwę pliku na: {new_name}")
             
-            # Przygotuj dane
+            # Pobierz ZARÓWNO interpretacje JAK I skuteczność
             interpretations = self.interpret_patterns()
+            effectiveness_data = self.verify_pattern_effectiveness()
             
             if not interpretations:
                 print("⚠ Brak wykrytych formacji do eksportu")
                 return None
             
-            print(f"Eksportuję {len(interpretations)} formacji...")
+            print(f"Eksportuję {len(interpretations)} formacji z analizą skuteczności...")
             
-            # Zawsze zapisuj jako CSV (prostsze i zawsze działa)
+            # Połącz dane z interpretacji i skuteczności
+            # Utwórz słownik dla szybkiego wyszukiwania skuteczności
+            effectiveness_dict = {}
+            for eff in effectiveness_data:
+                key = (eff['pattern'], eff['date'])
+                effectiveness_dict[key] = eff
+            
+            # Dodaj dane skuteczności do interpretacji
+            export_data = []
+            for interp in interpretations:
+                key = (interp['pattern'], interp['date'])
+                
+                # Pobierz dane skuteczności jeśli istnieją
+                eff = effectiveness_dict.get(key, {})
+                
+                # Utwórz rozszerzony wiersz
+                row = {
+                    # Kolumny z wykrywania (interpret_patterns)
+                    'index': interp['index'],
+                    'date': interp['date'],
+                    'pattern': interp['pattern'],
+                    'trend': interp['trend'],
+                    'type': interp['type'],
+                    'signal': interp['signal'],
+                    'strength': interp['strength'],
+                    'confidence': interp['confidence'],
+                    
+                    # Nowe kolumny z weryfikacji skuteczności (verify_pattern_effectiveness)
+                    'expected_direction': eff.get('expected', 'N/A'),
+                    'actual_change_pct': eff.get('actual_change', 'N/A'),
+                    'effective': 'TAK' if eff.get('effective', False) else 'NIE' if eff.get('effective') is not None else 'N/A',
+                    'near_key_level': 'TAK' if eff.get('near_key_level', False) else 'NIE',
+                    'reliability': eff.get('reliability', 'N/A')
+                }
+                
+                export_data.append(row)
+            
+            # Zawsze zapisuj jako CSV
             csv_path = filepath.replace('.xlsx', '.csv')
             
             # Utwórz DataFrame
-            df = pd.DataFrame(interpretations)
+            df = pd.DataFrame(export_data)
             
             # Zapisz do CSV z odpowiednim kodowaniem
             df.to_csv(csv_path, index=False, encoding='utf-8-sig', sep=';')
@@ -1233,6 +1419,10 @@ class CandlestickModel:
                 print(f"✓ Plik CSV utworzony: {csv_path}")
                 print(f"  Rozmiar: {file_size} bajtów")
                 print(f"  Wierszy: {len(df)}")
+                print(f"  Kolumn: {len(df.columns)}")
+                print(f"\nStruktura eksportu:")
+                print(f"  WYKRYWANIE (8 kolumn): index, date, pattern, trend, type, signal, strength, confidence")
+                print(f"  SKUTECZNOŚĆ (5 kolumn): expected_direction, actual_change_pct, effective, near_key_level, reliability")
                 return csv_path
             else:
                 print(f"❌ Plik nie istnieje: {csv_path}")
@@ -1243,5 +1433,3 @@ class CandlestickModel:
             import traceback
             traceback.print_exc()
             return None
-
-
