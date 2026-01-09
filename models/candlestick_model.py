@@ -1098,7 +1098,7 @@ class CandlestickModel:
                         f"Trend: {trend}<br>"
                         f"Typ: {pattern_type}<br>"
                         f"Cena: {close_price:.2f}<br>"
-                        f"Range: {low_price:.2f} - {high_price:.2f}"
+                        f"Zakres: {low_price:.2f} - {high_price:.2f}"
                     )
                     
                     if signal > 0:  # Wzrostowa

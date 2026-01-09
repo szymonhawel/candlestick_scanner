@@ -122,6 +122,13 @@
                     
                     <!-- ZAKŁADKA 2: WERYFIKACJA SKUTECZNOŚCI -->
                     <div class="tab-pane fade" id="effectiveness" role="tabpanel">
+                        <!-- NOWE: Pole wyszukiwania -->
+                        <div class="mb-3">
+                            <input type="text" class="form-control mb-2" id="effectivenessSearch" 
+                                placeholder="Szukaj po dacie, nazwie formacji lub wiarygodności...">
+                        </div>
+                        
+                        <!-- Filtry (zachowane) -->
                         <div class="mb-3">
                             <div class="btn-group" role="group">
                                 <input type="radio" class="btn-check" name="effectiveFilter" id="filterAll" checked>
@@ -134,17 +141,19 @@
                                 <label class="btn btn-outline-danger btn-sm" for="filterIneffective" onclick="filterEffectiveness(false)">Nieskuteczne</label>
                             </div>
                         </div>
+                        
                         <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                             <table class="table table-striped table-hover table-sm" id="effectivenessTable">
                                 <thead class="table-light sticky-top">
                                     <tr>
-                                        <th>Data</th>
-                                        <th>Formacja</th>
-                                        <th>Oczekiwany kierunek</th>
-                                        <th>Zmiana (%)</th>
-                                        <th>Skuteczność</th>
-                                        <th>W strefie</th>
-                                        <th>Wiarygodność</th>
+                                        <!-- ZMIENIONE: Dodano onclick i style dla sortowania -->
+                                        <th style="cursor: pointer;" onclick="sortEffectivenessTable(0)">Data ⬍</th>
+                                        <th style="cursor: pointer;" onclick="sortEffectivenessTable(1)">Formacja ⬍</th>
+                                        <th style="cursor: pointer;" onclick="sortEffectivenessTable(2)">Oczekiwany kierunek ⬍</th>
+                                        <th style="cursor: pointer;" onclick="sortEffectivenessTable(3)">Zmiana (%) ⬍</th>
+                                        <th style="cursor: pointer;" onclick="sortEffectivenessTable(4)">Skuteczność ⬍</th>
+                                        <th style="cursor: pointer;" onclick="sortEffectivenessTable(5)">W strefie ⬍</th>
+                                        <th style="cursor: pointer;" onclick="sortEffectivenessTable(6)">Wiarygodność ⬍</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -175,6 +184,11 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+                        
+                        <!-- NOWE: Licznik widocznych wierszy -->
+                        <div class="text-muted mt-2">
+                            <small id="effectivenessCounter">Pokazano wszystkie {{ effectiveness|length }} wyników. Użyj wyszukiwarki aby filtrować.</small>
                         </div>
                     </div>
                     
@@ -248,7 +262,7 @@
 
 <!-- JAVASCRIPT DLA INTERAKTYWNOŚCI -->
 <script>
-// Wyszukiwanie w tabeli formacji
+// Wyszukiwanie w tabeli formacji (zachowane)
 document.getElementById('patternSearch')?.addEventListener('keyup', function() {
     const searchValue = this.value.toLowerCase();
     const table = document.getElementById('patternsTable');
@@ -261,22 +275,62 @@ document.getElementById('patternSearch')?.addEventListener('keyup', function() {
     }
 });
 
-// Filtrowanie skuteczności
+// NOWE: Wyszukiwanie w tabeli skuteczności
+document.getElementById('effectivenessSearch')?.addEventListener('keyup', function() {
+    const searchValue = this.value.toLowerCase();
+    const table = document.getElementById('effectivenessTable');
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = tbody.getElementsByTagName('tr');
+    let visibleCount = 0;
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const text = row.textContent.toLowerCase();
+        const matches = text.includes(searchValue);
+        row.style.display = matches ? '' : 'none';
+        if (matches) visibleCount++;
+    }
+    
+    // Aktualizuj licznik
+    const total = rows.length;
+    const counter = document.getElementById('effectivenessCounter');
+    if (searchValue) {
+        counter.textContent = `Pokazano ${visibleCount} z ${total} wyników.`;
+    } else {
+        counter.textContent = `Pokazano wszystkie ${total} wyników. Użyj wyszukiwarki aby filtrować.`;
+    }
+});
+
+// Filtrowanie skuteczności (zaktualizowane - uwzględnia wyszukiwanie)
 function filterEffectiveness(filter) {
     const table = document.getElementById('effectivenessTable');
-    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = tbody.getElementsByTagName('tr');
+    const searchValue = document.getElementById('effectivenessSearch').value.toLowerCase();
+    let visibleCount = 0;
     
     for (let row of rows) {
+        const text = row.textContent.toLowerCase();
+        const matchesSearch = !searchValue || text.includes(searchValue);
+        
         if (filter === 'all') {
-            row.style.display = '';
+            row.style.display = matchesSearch ? '' : 'none';
+            if (matchesSearch) visibleCount++;
         } else {
             const isEffective = row.getAttribute('data-effective') === 'True';
-            row.style.display = (isEffective === filter) ? '' : 'none';
+            const matchesFilter = (isEffective === filter);
+            row.style.display = (matchesFilter && matchesSearch) ? '' : 'none';
+            if (matchesFilter && matchesSearch) visibleCount++;
         }
     }
+    
+    // Aktualizuj licznik
+    const total = rows.length;
+    const counter = document.getElementById('effectivenessCounter');
+    counter.textContent = `Pokazano ${visibleCount} z ${total} wyników.`;
 }
 
-// Sortowanie tabeli
+// Sortowanie tabeli formacji (zachowane)
 let sortOrder = {};
 function sortTable(columnIndex) {
     const table = document.getElementById('patternsTable');
@@ -294,6 +348,50 @@ function sortTable(columnIndex) {
     
     rows.forEach(row => tbody.appendChild(row));
 }
+
+// NOWE: Sortowanie tabeli skuteczności
+let effectivenessSortOrder = {};
+function sortEffectivenessTable(columnIndex) {
+    const table = document.getElementById('effectivenessTable');
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = Array.from(tbody.getElementsByTagName('tr'));
+    
+    effectivenessSortOrder[columnIndex] = !effectivenessSortOrder[columnIndex];
+    const ascending = effectivenessSortOrder[columnIndex];
+    
+    rows.sort((a, b) => {
+        let aVal = a.getElementsByTagName('td')[columnIndex].textContent.trim();
+        let bVal = b.getElementsByTagName('td')[columnIndex].textContent.trim();
+        
+        // Specjalna obsługa dla kolumny "Zmiana (%)" - sortuj numerycznie
+        if (columnIndex === 3) {
+            aVal = parseFloat(aVal.replace('%', '')) || 0;
+            bVal = parseFloat(bVal.replace('%', '')) || 0;
+            return ascending ? aVal - bVal : bVal - aVal;
+        }
+        
+        // Specjalna obsługa dla kolumny "Skuteczność" i "W strefie"
+        if (columnIndex === 4 || columnIndex === 5) {
+            aVal = aVal === '✓' ? 1 : 0;
+            bVal = bVal === '✓' ? 1 : 0;
+            return ascending ? aVal - bVal : bVal - aVal;
+        }
+        
+        // Specjalna obsługa dla kolumny "Wiarygodność"
+        if (columnIndex === 6) {
+            const reliabilityOrder = { 'Wysoka': 3, 'Średnia': 2, 'Niska': 1 };
+            aVal = reliabilityOrder[aVal] || 0;
+            bVal = reliabilityOrder[bVal] || 0;
+            return ascending ? aVal - bVal : bVal - aVal;
+        }
+        
+        // Domyślne sortowanie alfabetyczne
+        return ascending ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+}
 </script>
+
 
 {% endblock %}
