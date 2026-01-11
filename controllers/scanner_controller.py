@@ -74,23 +74,23 @@ class ScannerController:
         # Oblicz wsparcie/opór
         self.model.calculate_support_resistance()
         
-        # Interpretuj formacje
-        interpretations = self.model.interpret_patterns()
+        # # Interpretuj formacje
+        # interpretations = self.model.interpret_patterns()
         
-        # Weryfikuj skuteczność
-        effectiveness = self.model.verify_pattern_effectiveness()
+        # # Weryfikuj skuteczność
+        # effectiveness = self.model.verify_pattern_effectiveness()
         
-        # Generuj wykres
-        chart_image = self.model.generate_chart()
-        interactive_chart = self.model.generate_interactive_chart()
+        # # Generuj wykres
+        # chart_image = self.model.generate_chart()
+        # interactive_chart = self.model.generate_interactive_chart()
         
         return jsonify({
             'success': True,
             'patterns_count': len(patterns),
-            'interpretations': interpretations,
-            'effectiveness': effectiveness,
-            'chart': chart_image,
-            'interactive_chart': interactive_chart
+            # 'interpretations': interpretations,
+            # 'effectiveness': effectiveness,
+            # 'chart': chart_image,
+            # 'interactive_chart': interactive_chart
         }), 200
     
     def results_page(self):
