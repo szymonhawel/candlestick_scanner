@@ -438,7 +438,7 @@ class TestPerformance:
         candlestick_model_with_data.calculate_support_resistance()
         
         start = time.time()
-        chart = candlestick_model_with_data.generate_chart()
+        chart = candlestick_model_with_data.generate_interactive_chart()
         elapsed = time.time() - start
         
         assert chart is not None
