@@ -84,6 +84,10 @@ if test_key in grouped:
             label='Czas wczytywania', zorder=3)
     ax.fill_between(x, 0, y, alpha=0.2, color='#3498db')
     
+    # Ustaw jawne etykiety osi X
+    ax.set_xticks(x)
+    ax.set_xticklabels([f'{xi}' for xi in x], fontsize=11)
+    
     # Adnotacje
     for xi, yi in zip(x, y):
         ax.annotate(f'{yi:.1f}ms', xy=(xi, yi), xytext=(0, 10),
@@ -118,6 +122,10 @@ if test_key in grouped:
             label='Czas wykrywania formacji', zorder=3)
     ax.fill_between(x, 0, y, alpha=0.2, color='#e74c3c')
     
+    # Ustaw jawne etykiety osi X
+    ax.set_xticks(x)
+    ax.set_xticklabels([f'{xi}' for xi in x], fontsize=11)
+    
     # Adnotacje
     for xi, yi in zip(x, y):
         ax.annotate(f'{yi:.1f}ms', xy=(xi, yi), xytext=(0, 10),
@@ -151,6 +159,11 @@ if test_key in grouped:
             label='Czas generowania wykresu', zorder=3)
     ax.fill_between(x, 0, y, alpha=0.2, color='#2ecc71')
     
+    # Ustaw jawne etykiety osi X
+    ax.set_xticks(x)
+    ax.set_xticklabels([f'{xi}' for xi in x], fontsize=11)
+    
+    # Adnotacje
     for xi, yi in zip(x, y):
         ax.annotate(f'{yi:.1f}ms', xy=(xi, yi), xytext=(0, 10),
                    textcoords='offset points', ha='center', fontsize=9, fontweight='bold',
@@ -183,6 +196,11 @@ if test_key in grouped:
             label='Zużycie pamięci', zorder=3)
     ax.fill_between(x, 0, y, alpha=0.2, color='#9b59b6')
     
+    # Ustaw jawne etykiety osi X
+    ax.set_xticks(x)
+    ax.set_xticklabels([f'{xi}' for xi in x], fontsize=11)
+    
+    # Adnotacje
     for xi, yi in zip(x, y):
         ax.annotate(f'{yi:.2f}MB', xy=(xi, yi), xytext=(0, 10),
                    textcoords='offset points', ha='center', fontsize=9, fontweight='bold',
@@ -213,6 +231,13 @@ test_mapping = {
     'test_perf_memory_usage': ('PERF-04: Pamięć', '#9b59b6', 'D')
 }
 
+# Zbierz wszystkie wartości x (powinny być takie same dla wszystkich testów)
+all_x = None
+for test_name, data in grouped.items():
+    if test_name in test_mapping:
+        all_x = data['x']
+        break
+
 for test_name, data in grouped.items():
     if test_name in test_mapping:
         label, color, marker = test_mapping[test_name]
@@ -224,6 +249,11 @@ for test_name, data in grouped.items():
         
         ax.plot(x, y_norm, marker=marker, markersize=8, linewidth=2,
                 label=label, color=color, zorder=3)
+
+# Ustaw jawne etykiety osi X
+if all_x:
+    ax.set_xticks(all_x)
+    ax.set_xticklabels([f'{xi}' for xi in all_x], fontsize=11)
 
 ax.set_xlabel('Liczba świec', fontsize=13, fontweight='bold')
 ax.set_ylabel('Względna wydajność (% od maksimum)', fontsize=13, fontweight='bold')
