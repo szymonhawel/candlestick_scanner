@@ -41,6 +41,7 @@ build/
 .pytest_cache/
 .coverage
 htmlcov/
+/tests/results/
 
 # Logs
 *.log

@@ -389,24 +389,119 @@ class TestSystemEndToEnd:
 # 4. TESTY WYDAJNOŚCIOWE (PERFORMANCE TESTS)
 # ============================================================================
 
+# class TestPerformance:
+#     """Testy wydajności i efektywności"""
+    
+#     def test_perf_large_dataset_loading(self, candlestick_model, tmp_path):
+#         """Test PERF-01: Wczytywanie dużego zbioru danych (10000 świec)"""
+#         import time
+        
+#         # Przygotuj duży CSV
+#         dates = pd.date_range('2000-01-01', periods=10000, freq='D')
+#         large_data = pd.DataFrame({
+#             'open': np.random.randn(10000).cumsum() + 100,
+#             'high': np.random.randn(10000).cumsum() + 102,
+#             'low': np.random.randn(10000).cumsum() + 98,
+#             'close': np.random.randn(10000).cumsum() + 100,
+#             'volume': np.random.randint(1000000, 5000000, 10000)
+#         }, index=dates)
+        
+#         csv_file = tmp_path / "large_data.csv"
+#         large_data.to_csv(csv_file)
+        
+#         # Zmierz czas wczytywania
+#         start = time.time()
+#         result = candlestick_model.load_data_from_file(str(csv_file))
+#         elapsed = time.time() - start
+        
+#         assert result is True
+#         assert len(candlestick_model.data) == 10000
+#         assert elapsed < 5.0  # Maksymalnie 5 sekund
+#         print(f"\n✓ Wczytano 10000 świec w {elapsed:.2f}s")
+    
+#     def test_perf_pattern_detection_speed(self, candlestick_model_with_data):
+#         """Test PERF-02: Szybkość wykrywania formacji"""
+#         import time
+        
+#         start = time.time()
+#         patterns = candlestick_model_with_data.detect_patterns()
+#         elapsed = time.time() - start
+        
+#         assert elapsed < 2.0  # Maksymalnie 2 sekundy dla 100 świec
+#         print(f"\n✓ Wykryto formacje w {elapsed:.2f}s")
+    
+#     def test_perf_chart_generation_speed(self, candlestick_model_with_data):
+#         """Test PERF-03: Szybkość generowania wykresów"""
+#         import time
+        
+#         candlestick_model_with_data.detect_patterns()
+#         candlestick_model_with_data.calculate_support_resistance()
+        
+#         start = time.time()
+#         chart = candlestick_model_with_data.generate_interactive_chart()
+#         elapsed = time.time() - start
+        
+#         assert chart is not None
+#         assert elapsed < 3.0  # Maksymalnie 3 sekundy
+#         print(f"\n✓ Wygenerowano wykres w {elapsed:.2f}s")
+    
+#     def test_perf_memory_usage(self, candlestick_model, tmp_path):
+#         """Test PERF-04: Zużycie pamięci dla dużego zbioru"""
+#         import psutil
+#         import os
+        
+#         process = psutil.Process(os.getpid())
+#         mem_before = process.memory_info().rss / 1024 / 1024  # MB
+        
+#         # Załaduj duży zbiór
+#         dates = pd.date_range('2000-01-01', periods=10000, freq='D')
+#         large_data = pd.DataFrame({
+#             'open': np.random.randn(10000).cumsum() + 100,
+#             'high': np.random.randn(10000).cumsum() + 102,
+#             'low': np.random.randn(10000).cumsum() + 98,
+#             'close': np.random.randn(10000).cumsum() + 100,
+#             'volume': np.random.randint(1000000, 5000000, 10000)
+#         }, index=dates)
+        
+#         csv_file = tmp_path / "large_data.csv"
+#         large_data.to_csv(csv_file)
+        
+#         candlestick_model.load_data_from_file(str(csv_file))
+#         candlestick_model.detect_patterns()
+        
+#         mem_after = process.memory_info().rss / 1024 / 1024  # MB
+#         mem_increase = mem_after - mem_before
+        
+#         # Zużycie nie powinno przekroczyć 100 MB dla 10k świec
+#         assert mem_increase < 100
+#         print(f"\n✓ Wzrost pamięci: {mem_increase:.2f} MB")
+
+# ============================================================================
+# 4. TESTY WYDAJNOŚCIOWE (PERFORMANCE TESTS)
+# ============================================================================
+
 class TestPerformance:
     """Testy wydajności i efektywności"""
     
-    def test_perf_large_dataset_loading(self, candlestick_model, tmp_path):
-        """Test PERF-01: Wczytywanie dużego zbioru danych (10000 świec)"""
+    # Rozmiary zbiorów danych do testowania
+    DATASET_SIZES = [100, 500, 1000, 5000, 10000]
+    
+    @pytest.mark.parametrize("num_candles", DATASET_SIZES)
+    def test_perf_large_dataset_loading(self, candlestick_model, tmp_path, perf_tracker, num_candles):
+        """Test PERF-01: Wczytywanie dużego zbioru danych"""
         import time
         
         # Przygotuj duży CSV
-        dates = pd.date_range('2000-01-01', periods=10000, freq='D')
+        dates = pd.date_range('2000-01-01', periods=num_candles, freq='D')
         large_data = pd.DataFrame({
-            'open': np.random.randn(10000).cumsum() + 100,
-            'high': np.random.randn(10000).cumsum() + 102,
-            'low': np.random.randn(10000).cumsum() + 98,
-            'close': np.random.randn(10000).cumsum() + 100,
-            'volume': np.random.randint(1000000, 5000000, 10000)
+            'open': np.random.randn(num_candles).cumsum() + 100,
+            'high': np.random.randn(num_candles).cumsum() + 102,
+            'low': np.random.randn(num_candles).cumsum() + 98,
+            'close': np.random.randn(num_candles).cumsum() + 100,
+            'volume': np.random.randint(1000000, 5000000, num_candles)
         }, index=dates)
         
-        csv_file = tmp_path / "large_data.csv"
+        csv_file = tmp_path / f"large_data_{num_candles}.csv"
         large_data.to_csv(csv_file)
         
         # Zmierz czas wczytywania
@@ -415,37 +510,96 @@ class TestPerformance:
         elapsed = time.time() - start
         
         assert result is True
-        assert len(candlestick_model.data) == 10000
+        assert len(candlestick_model.data) == num_candles
         assert elapsed < 5.0  # Maksymalnie 5 sekund
-        print(f"\n✓ Wczytano 10000 świec w {elapsed:.2f}s")
+        
+        # Zapisz wynik
+        perf_tracker({
+            'test': 'test_perf_large_dataset_loading',
+            'num_candles': num_candles,
+            'czas_ms': round(elapsed * 1000, 2),
+            'limit_ms': 5000,
+            'status': 'PASSED' if elapsed < 5.0 else 'FAILED'
+        })
+        
+        print(f"\n✓ Wczytano {num_candles} świec w {elapsed:.3f}s ({elapsed*1000:.2f}ms)")
     
-    def test_perf_pattern_detection_speed(self, candlestick_model_with_data):
+    @pytest.mark.parametrize("num_candles", DATASET_SIZES)
+    def test_perf_pattern_detection_speed(self, candlestick_model, tmp_path, perf_tracker, num_candles):
         """Test PERF-02: Szybkość wykrywania formacji"""
         import time
         
+        # Przygotuj dane
+        dates = pd.date_range('2000-01-01', periods=num_candles, freq='D')
+        candlestick_model.data = pd.DataFrame({
+            'open': np.random.randn(num_candles).cumsum() + 100,
+            'high': np.random.randn(num_candles).cumsum() + 102,
+            'low': np.random.randn(num_candles).cumsum() + 98,
+            'close': np.random.randn(num_candles).cumsum() + 100,
+            'volume': np.random.randint(1000000, 5000000, num_candles)
+        }, index=dates)
+        
+        # Zapewnij spójność OHLC
+        candlestick_model.data['high'] = candlestick_model.data[['open', 'high', 'close']].max(axis=1)
+        candlestick_model.data['low'] = candlestick_model.data[['open', 'low', 'close']].min(axis=1)
+        
         start = time.time()
-        patterns = candlestick_model_with_data.detect_patterns()
+        patterns = candlestick_model.detect_patterns()
         elapsed = time.time() - start
         
-        assert elapsed < 2.0  # Maksymalnie 2 sekundy dla 100 świec
-        print(f"\n✓ Wykryto formacje w {elapsed:.2f}s")
+        assert elapsed < 2.0  # Maksymalnie 2 sekundy
+        
+        perf_tracker({
+            'test': 'test_perf_pattern_detection_speed',
+            'num_candles': num_candles,
+            'czas_ms': round(elapsed * 1000, 2),
+            'limit_ms': 2000,
+            'patterns_found': sum(len(v) for v in patterns.values()) if patterns else 0,
+            'status': 'PASSED' if elapsed < 2.0 else 'FAILED'
+        })
+        
+        print(f"\n✓ Wykryto formacje ({num_candles} świec) w {elapsed:.3f}s ({elapsed*1000:.2f}ms)")
     
-    def test_perf_chart_generation_speed(self, candlestick_model_with_data):
+    @pytest.mark.parametrize("num_candles", DATASET_SIZES)
+    def test_perf_chart_generation_speed(self, candlestick_model, tmp_path, perf_tracker, num_candles):
         """Test PERF-03: Szybkość generowania wykresów"""
         import time
         
-        candlestick_model_with_data.detect_patterns()
-        candlestick_model_with_data.calculate_support_resistance()
+        # Przygotuj dane
+        dates = pd.date_range('2000-01-01', periods=num_candles, freq='D')
+        candlestick_model.data = pd.DataFrame({
+            'open': np.random.randn(num_candles).cumsum() + 100,
+            'high': np.random.randn(num_candles).cumsum() + 102,
+            'low': np.random.randn(num_candles).cumsum() + 98,
+            'close': np.random.randn(num_candles).cumsum() + 100,
+            'volume': np.random.randint(1000000, 5000000, num_candles)
+        }, index=dates)
+        
+        candlestick_model.data['high'] = candlestick_model.data[['open', 'high', 'close']].max(axis=1)
+        candlestick_model.data['low'] = candlestick_model.data[['open', 'low', 'close']].min(axis=1)
+        
+        candlestick_model.detect_patterns()
+        candlestick_model.calculate_support_resistance()
         
         start = time.time()
-        chart = candlestick_model_with_data.generate_interactive_chart()
+        chart = candlestick_model.generate_interactive_chart()
         elapsed = time.time() - start
         
         assert chart is not None
         assert elapsed < 3.0  # Maksymalnie 3 sekundy
-        print(f"\n✓ Wygenerowano wykres w {elapsed:.2f}s")
+        
+        perf_tracker({
+            'test': 'test_perf_chart_generation_speed',
+            'num_candles': num_candles,
+            'czas_ms': round(elapsed * 1000, 2),
+            'limit_ms': 3000,
+            'status': 'PASSED' if elapsed < 3.0 else 'FAILED'
+        })
+        
+        print(f"\n✓ Wygenerowano wykres ({num_candles} świec) w {elapsed:.3f}s ({elapsed*1000:.2f}ms)")
     
-    def test_perf_memory_usage(self, candlestick_model, tmp_path):
+    @pytest.mark.parametrize("num_candles", DATASET_SIZES)
+    def test_perf_memory_usage(self, candlestick_model, tmp_path, perf_tracker, num_candles):
         """Test PERF-04: Zużycie pamięci dla dużego zbioru"""
         import psutil
         import os
@@ -454,16 +608,16 @@ class TestPerformance:
         mem_before = process.memory_info().rss / 1024 / 1024  # MB
         
         # Załaduj duży zbiór
-        dates = pd.date_range('2000-01-01', periods=10000, freq='D')
+        dates = pd.date_range('2000-01-01', periods=num_candles, freq='D')
         large_data = pd.DataFrame({
-            'open': np.random.randn(10000).cumsum() + 100,
-            'high': np.random.randn(10000).cumsum() + 102,
-            'low': np.random.randn(10000).cumsum() + 98,
-            'close': np.random.randn(10000).cumsum() + 100,
-            'volume': np.random.randint(1000000, 5000000, 10000)
+            'open': np.random.randn(num_candles).cumsum() + 100,
+            'high': np.random.randn(num_candles).cumsum() + 102,
+            'low': np.random.randn(num_candles).cumsum() + 98,
+            'close': np.random.randn(num_candles).cumsum() + 100,
+            'volume': np.random.randint(1000000, 5000000, num_candles)
         }, index=dates)
         
-        csv_file = tmp_path / "large_data.csv"
+        csv_file = tmp_path / f"large_data_{num_candles}.csv"
         large_data.to_csv(csv_file)
         
         candlestick_model.load_data_from_file(str(csv_file))
@@ -472,9 +626,19 @@ class TestPerformance:
         mem_after = process.memory_info().rss / 1024 / 1024  # MB
         mem_increase = mem_after - mem_before
         
-        # Zużycie nie powinno przekroczyć 100 MB dla 10k świec
+        # Zużycie nie powinno przekroczyć 100 MB
         assert mem_increase < 100
-        print(f"\n✓ Wzrost pamięci: {mem_increase:.2f} MB")
+        
+        perf_tracker({
+            'test': 'test_perf_memory_usage',
+            'num_candles': num_candles,
+            'memory_mb': round(mem_increase, 2),
+            'limit_mb': 100,
+            'status': 'PASSED' if mem_increase < 100 else 'FAILED'
+        })
+        
+        print(f"\n✓ Wzrost pamięci ({num_candles} świec): {mem_increase:.2f} MB")
+
 
 
 # ============================================================================
