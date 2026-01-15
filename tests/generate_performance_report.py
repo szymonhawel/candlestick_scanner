@@ -1,6 +1,8 @@
 """
 Generator wykresów skalowania wydajności dla testów PERF-01 do PERF-04.
-Uruchomienie: python tests/generate_performance_report.py
+Uruchomienie:
+python -m pytest tests/test_candlestick_scanner.py::TestPerformance -v
+python tests/generate_performance_report.py
 """
 
 import json
@@ -96,7 +98,7 @@ if test_key in grouped:
     ax.legend(fontsize=11)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'perf01_large_dataset_loading.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'perf01_large_dataset_loading.png'), dpi=600, bbox_inches='tight')
     print("✓ Zapisano: perf01_large_dataset_loading.png")
     plt.close()
 
@@ -106,49 +108,31 @@ if test_key in grouped:
 
 test_key = 'test_perf_pattern_detection_speed'
 if test_key in grouped:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+    fig, ax = plt.subplots(figsize=(12, 7))
     
     x = grouped[test_key]['x']
     y = grouped[test_key]['y']
-    patterns = grouped[test_key]['extra']
     
     # Wykres czasu
-    ax1.plot(x, y, marker='s', markersize=10, linewidth=2.5, color='#e74c3c',
-             label='Czas wykrywania', zorder=3)
-    ax1.fill_between(x, 0, y, alpha=0.2, color='#e74c3c')
+    ax.plot(x, y, marker='s', markersize=10, linewidth=2.5, color='#e74c3c',
+            label='Czas wykrywania formacji', zorder=3)
+    ax.fill_between(x, 0, y, alpha=0.2, color='#e74c3c')
     
+    # Adnotacje
     for xi, yi in zip(x, y):
-        ax1.annotate(f'{yi:.1f}ms', xy=(xi, yi), xytext=(0, 10),
-                    textcoords='offset points', ha='center', fontsize=9, fontweight='bold',
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='gray', alpha=0.8))
+        ax.annotate(f'{yi:.1f}ms', xy=(xi, yi), xytext=(0, 10),
+                   textcoords='offset points', ha='center', fontsize=9, fontweight='bold',
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='gray', alpha=0.8))
     
-    ax1.set_xlabel('Liczba świec', fontsize=13, fontweight='bold')
-    ax1.set_ylabel('Czas (ms)', fontsize=13, fontweight='bold')
-    ax1.set_title('Czas wykrywania', fontsize=13, fontweight='bold')
-    ax1.grid(True, alpha=0.3, linestyle='--')
-    ax1.legend(fontsize=11)
-    
-    # Wykres liczby wykrytych formacji
-    ax2.plot(x, patterns, marker='o', markersize=10, linewidth=2.5, color='#f39c12',
-             label='Liczba wykrytych formacji', zorder=3)
-    ax2.fill_between(x, 0, patterns, alpha=0.2, color='#f39c12')
-    
-    for xi, pi in zip(x, patterns):
-        ax2.annotate(f'{pi}', xy=(xi, pi), xytext=(0, 10),
-                    textcoords='offset points', ha='center', fontsize=9, fontweight='bold',
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='gray', alpha=0.8))
-    
-    ax2.set_xlabel('Liczba świec', fontsize=13, fontweight='bold')
-    ax2.set_ylabel('Liczba formacji', fontsize=13, fontweight='bold')
-    ax2.set_title('Liczba wykrytych formacji', fontsize=13, fontweight='bold')
-    ax2.grid(True, alpha=0.3, linestyle='--')
-    ax2.legend(fontsize=11)
-    
-    fig.suptitle('PERF-02: Skalowanie wykrywania formacji świecowych (TA-Lib)', 
-                 fontsize=15, fontweight='bold', y=1.02)
+    ax.set_xlabel('Liczba świec', fontsize=13, fontweight='bold')
+    ax.set_ylabel('Czas (ms)', fontsize=13, fontweight='bold')
+    ax.set_title('PERF-02: Skalowanie wykrywania formacji świecowych (TA-Lib)', 
+                 fontsize=15, fontweight='bold', pad=15)
+    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.legend(fontsize=11)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'perf02_pattern_detection_speed.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'perf02_pattern_detection_speed.png'), dpi=600, bbox_inches='tight')
     print("✓ Zapisano: perf02_pattern_detection_speed.png")
     plt.close()
 
@@ -180,7 +164,7 @@ if test_key in grouped:
     ax.legend(fontsize=11)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'perf03_chart_generation_speed.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'perf03_chart_generation_speed.png'), dpi=600, bbox_inches='tight')
     print("✓ Zapisano: perf03_chart_generation_speed.png")
     plt.close()
 
@@ -212,7 +196,7 @@ if test_key in grouped:
     ax.legend(fontsize=11)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, 'perf04_memory_usage.png'), dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(output_dir, 'perf04_memory_usage.png'), dpi=600, bbox_inches='tight')
     print("✓ Zapisano: perf04_memory_usage.png")
     plt.close()
 
@@ -249,7 +233,7 @@ ax.grid(True, alpha=0.3, linestyle='--')
 ax.legend(fontsize=11, loc='best')
 
 plt.tight_layout()
-plt.savefig(os.path.join(output_dir, 'perf_all_comparison.png'), dpi=300, bbox_inches='tight')
+plt.savefig(os.path.join(output_dir, 'perf_all_comparison.png'), dpi=600, bbox_inches='tight')
 print("✓ Zapisano: perf_all_comparison.png")
 plt.close()
 

@@ -554,7 +554,6 @@ class TestPerformance:
             'num_candles': num_candles,
             'czas_ms': round(elapsed * 1000, 2),
             'limit_ms': 2000,
-            'patterns_found': sum(len(v) for v in patterns.values()) if patterns else 0,
             'status': 'PASSED' if elapsed < 2.0 else 'FAILED'
         })
         
