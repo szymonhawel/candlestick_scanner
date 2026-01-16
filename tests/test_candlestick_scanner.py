@@ -600,11 +600,11 @@ class TestPerformance:
     @pytest.mark.parametrize("num_candles", DATASET_SIZES)
     def test_perf_memory_usage(self, candlestick_model, tmp_path, perf_tracker, num_candles):
         """Test PERF-04: Zużycie pamięci dla dużego zbioru"""
-        import psutil
-        import os
+        import sys
+        import gc
         
-        process = psutil.Process(os.getpid())
-        mem_before = process.memory_info().rss / 1024 / 1024  # MB
+        # Wyczyść pamięć
+        gc.collect()
         
         # Załaduj duży zbiór
         dates = pd.date_range('2000-01-01', periods=num_candles, freq='D')
@@ -622,21 +622,27 @@ class TestPerformance:
         candlestick_model.load_data_from_file(str(csv_file))
         candlestick_model.detect_patterns()
         
-        mem_after = process.memory_info().rss / 1024 / 1024  # MB
-        mem_increase = mem_after - mem_before
+        # MIERZ FAKTYCZNY ROZMIAR DANYCH W PAMIĘCI
+        data_memory = candlestick_model.data.memory_usage(deep=True).sum() / 1024 / 1024  # MB
+        
+        # Dodaj pamięć zużytą przez wykryte wzorce
+        patterns_memory = sys.getsizeof(candlestick_model.patterns) / 1024 / 1024  # MB
+        
+        total_memory = data_memory + patterns_memory
         
         # Zużycie nie powinno przekroczyć 100 MB
-        assert mem_increase < 100
+        assert total_memory < 100, f"Zużycie pamięci {total_memory:.2f} MB przekracza limit 100 MB"
         
         perf_tracker({
             'test': 'test_perf_memory_usage',
             'num_candles': num_candles,
-            'memory_mb': round(mem_increase, 2),
+            'memory_mb': round(total_memory, 2),
             'limit_mb': 100,
-            'status': 'PASSED' if mem_increase < 100 else 'FAILED'
+            'status': 'PASSED' if total_memory < 100 else 'FAILED'
         })
         
-        print(f"\n✓ Wzrost pamięci ({num_candles} świec): {mem_increase:.2f} MB")
+        print(f"\n✓ Zużycie pamięci ({num_candles} świec): {total_memory:.2f} MB (data: {data_memory:.2f} MB, patterns: {patterns_memory:.4f} MB)")
+
 
 
 

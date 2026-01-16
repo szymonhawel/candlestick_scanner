@@ -1,8 +1,8 @@
 """
 Generator wykresów skalowania wydajności dla testów PERF-01 do PERF-04.
 Uruchomienie:
-python -m pytest tests/test_candlestick_scanner.py::TestPerformance -v
-python tests/generate_performance_report.py
+py -m pytest tests/test_candlestick_scanner.py::TestPerformance -v
+py tests/generate_performance_report.py
 """
 
 import json
@@ -321,7 +321,10 @@ for test_name, (label, _, _) in test_mapping.items():
         print(f"\n{label}:")
         print(f"  Najmniejszy zbiór ({x[0]} świec): {y[0]:.2f} {'MB' if 'memory' in test_name else 'ms'}")
         print(f"  Największy zbiór ({x[-1]} świec): {y[-1]:.2f} {'MB' if 'memory' in test_name else 'ms'}")
-        print(f"  Wzrost: {(y[-1]/y[0]):.2f}x")
+        if y[0] > 0:
+            print(f"  Wzrost: {(y[-1]/y[0]):.2f}x")
+        else:
+            print(f"  Wzrost: nie można obliczyć (wartość początkowa = 0)")
 
 print("\n" + "="*80)
 print("✅ Wygenerowano wszystkie wykresy!")
